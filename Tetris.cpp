@@ -4,8 +4,8 @@
 #include <string>
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 720
-const std::string WINDOW_TITLE = "Tetris Game - Cuong Nguyen";
 using namespace std;
+const string WINDOW_TITLE = "Tetris Game - Cuong Nguyen";
 class tetrisTexture{
 public:
     tetrisTexture();
@@ -66,6 +66,22 @@ bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer){
     bool success = true;
     if(!tetrisSpriteSheet[TETRIS_BACKGROUND_TEXTURE].loadFromFile("textures/background.png", tetrisRenderer)){
         cout << "Load Tetris Background Failed" << endl;
+        success = false;
+    }
+    if(!tetrisSpriteSheet[TETRIS_SPRITE_SCORE_BOX].loadFromFile("textures/scoreBox.png", tetrisRenderer)){
+        cout << "Load Tetris Score Box Failed" << endl;
+        success = false;
+    }
+    if(!tetrisSpriteSheet[TETRIS_SPRITE_LEVEL_BOX].loadFromFile("textures/levelBox.png", tetrisRenderer)){
+        cout << "Load Tetris Level Box Failed" << endl;
+        success = false;
+    }
+    if(!tetrisSpriteSheet[TETRIS_SPRITE_LINES_BOX].loadFromFile("textures/linesBox.png", tetrisRenderer)){
+        cout << "Load Tetris Lines Box Failed" << endl;
+        success = false;
+    }
+    if(!tetrisSpriteSheet[TETRIS_SPRITE_TIME_BOX].loadFromFile("textures/timeBox.png", tetrisRenderer)){
+        cout << "Load Tetris Time Box Failed" << endl;
         success = false;
     }
     return success;

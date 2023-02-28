@@ -195,6 +195,63 @@ void tetrisTexture::renderTexture(const int &x, const int &y, SDL_Renderer*& tet
     }
     SDL_RenderCopy(tetrisRenderer, mTexture, clipRect, &dstRect);
 }
+
+tetrisTimer::tetrisTimer(){
+    startTime = 0;
+    pausedTime = 0;
+    tetrisStarted = false;
+    tetrisPaused = false;
+}
+
+int tetrisTimer::tetrisTimerGetTicks(){
+    unsigned int currentTime = 0;
+    if(tetrisStarted == true){
+        if(tetrisPaused == false){
+            currentTime = SDL_GetTicks() - startTime;
+        } else {
+            currentTime = pausedTime;
+        }
+    }
+    return currentTime;
+}
+
+void tetrisTimer::tetrisTimerStart(){
+        tetrisStarted = true;
+        tetrisPaused = false;
+        startTime = SDL_GetTicks();
+        pausedTime = 0;
+}
+
+void tetrisTimer::tetrisTimerPause(){
+    if((tetrisStarted == true) && (tetrisPaused == false)){
+        tetrisPaused = true;
+        pausedTime = SDL_GetTicks() - startTime;
+        startTime = 0;
+    }
+}
+
+void tetrisTimer::tetrisTimerUnpause(){
+    if((tetrisStarted == true) && (tetrisPaused == true)){
+        tetrisPaused = false;
+        startTime = SDL_GetTicks() - pausedTime;
+        pausedTime = 0;
+    }
+}
+
+void tetrisTimer::tetrisTimerStop(){
+        tetrisStarted = false;
+        tetrisPaused = false;
+        startTime = 0;
+        pausedTime = 0;
+}
+bool tetrisTimer::isTimerStarted(){
+    return tetrisStarted;
+}
+
+bool tetrisTimer::isTimerPaused(){
+    return tetrisPaused;
+}
+
 bool initSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer){
     bool success = true;
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0){

@@ -3,10 +3,28 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <string>
+#include <sstream>
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 720
 using namespace std;
 const string WINDOW_TITLE = "Tetris Game - Cuong Nguyen";
+class tetrisTimer{
+public:
+    tetrisTimer();
+    int tetrisTimerGetTicks();
+    void tetrisTimerStart();
+    void tetrisTimerPause();
+    void tetrisTimerUnpause();
+    void tetrisTimerStop();
+    bool isTimerStarted();
+    bool isTimerPaused();
+private:
+    unsigned int startTime;
+    unsigned int pausedTime;
+    bool tetrisStarted;
+    bool tetrisPaused;
+};
+
 class tetrisTexture{
 public:
     tetrisTexture();
@@ -36,7 +54,6 @@ enum tetrisTextureFlags{
 int main(int argc, char* argv[]){
     SDL_Window* tetrisWindow = nullptr;
     SDL_Renderer* tetrisRenderer = nullptr;
-    // mang chua cac hinh tu file
     tetrisTexture tetrisSpriteSheet[TETRIS_TOTAL_IMAGE];
     TTF_Font* tetrisFont = nullptr;
     if(!initSDL(tetrisWindow, tetrisRenderer)){
@@ -52,7 +69,6 @@ int main(int argc, char* argv[]){
                 if(tetrisEvent.type == SDL_QUIT){
                     quit = true;
                 }
-
             }
             SDL_RenderClear(tetrisRenderer);
             tetrisSpriteSheet[TETRIS_BACKGROUND_TEXTURE].renderTexture((SCREEN_WIDTH - tetrisSpriteSheet[TETRIS_BACKGROUND_TEXTURE].getWidth())/2, (SCREEN_HEIGHT - tetrisSpriteSheet[TETRIS_BACKGROUND_TEXTURE].getHeight())/2, tetrisRenderer, nullptr);
@@ -90,7 +106,7 @@ bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, 
         cout << "Load Tetris Lines Box Failed" << endl;
         success = false;
     }
-    if(!tetrisSpriteSheet[TETRIS_SPRITE_TIME_TEXT].loadFromFile("textures/timeBox.png", tetrisRenderer)){
+    if(!tetrisSpriteSheet[TETRIS_SPRITE_TIME_TEXT].loadFromText(tetrisFont, "TIME", tetrisRenderer)){
         cout << "Load Tetris Time Box Failed" << endl;
         success = false;
     }

@@ -26,9 +26,11 @@ private:
 };
 const int BLOCK_SIZE = 40;
 const int SPRITE_VEL = BLOCK_SIZE;
+const SDL_Rect GAMEBOX = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 class tetrisTexture{
 public:
     SDL_Point spritePos;
+    SDL_Rect collisionRect;
     tetrisTexture();
     ~tetrisTexture();
     int getWidth();
@@ -38,6 +40,7 @@ public:
     bool loadFromText(TTF_Font*& font, const string &text, SDL_Renderer*& tetrisRenderer);
     void eventHandler(SDL_Event& tetrisEvent);
     void move();
+    void updateCollisionRect();
     void renderTexture(SDL_Renderer*& tetrisRenderer, SDL_Rect* clipRect);
 private:
     SDL_Texture* mTexture;
@@ -49,6 +52,7 @@ bool initSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer);
 void closeSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer, tetrisTexture* tetrisSpriteSheet, TTF_Font*& tetrisFont);
 bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, TTF_Font*& tetrisFont);
 void setGravity(tetrisTexture* tetrisSpriteSheet, tetrisTimer& timer);
+bool checkCollision(const SDL_Rect &firstRect, const SDL_Rect &secondRect);
 enum tetrisTextureFlags{
     TETRIS_BACKGROUND_TEXTURE = 0,
     TETRIS_SPRITE_SCORE_TEXT = 1,
@@ -86,9 +90,12 @@ int main(int argc, char* argv[]){
             tetrisSpriteSheet[TETRIS_SPRITE_SCORE_TEXT].renderTexture(tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_SPRITE_LEVEL_TEXT].renderTexture(tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_SPRITE_LINES_TEXT].renderTexture(tetrisRenderer, nullptr);
-            setGravity(tetrisSpriteSheet, timer);
+            if(!checkCollision(tetrisSpriteSheet[TETRIS_SPRITE_OBJECT_1].collisionRect, GAMEBOX)){
+                setGravity(tetrisSpriteSheet, timer);
+                tetrisSpriteSheet[TETRIS_SPRITE_OBJECT_1].move();
+                tetrisSpriteSheet[TETRIS_SPRITE_OBJECT_1].updateCollisionRect();
+            }
             tetrisSpriteSheet[TETRIS_SPRITE_OBJECT_1].renderTexture(tetrisRenderer, nullptr);
-            tetrisSpriteSheet[TETRIS_SPRITE_OBJECT_1].move();
             SDL_RenderPresent(tetrisRenderer);
             SDL_Delay(20);
         }
@@ -139,19 +146,29 @@ bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, 
     } else {
         tetrisSpriteSheet[TETRIS_SPRITE_OBJECT_1].spritePos.x = BLOCK_SIZE*5;
         tetrisSpriteSheet[TETRIS_SPRITE_OBJECT_1].spritePos.y = 0;
+        tetrisSpriteSheet[TETRIS_SPRITE_OBJECT_1].updateCollisionRect();
     }
     return success;
 }
 
 void setGravity(tetrisTexture* tetrisSpriteSheet, tetrisTimer& timer){
     for(int i = TETRIS_SPRITE_OBJECT_1; i < TETRIS_TOTAL_IMAGE; i++){
-        static int check = timer.tetrisTimerGetTicks();
-        if(timer.tetrisTimerGetTicks() - (check) >= 1000)
-        {
-            tetrisSpriteSheet[i].spritePos.y += SPRITE_VEL;
-            check = ( timer.tetrisTimerGetTicks()/1000 ) * 1000;
-        }
+            static int check = timer.tetrisTimerGetTicks();
+            if(timer.tetrisTimerGetTicks() - (check) >= 1000)
+            {
+                tetrisSpriteSheet[i].spritePos.y += SPRITE_VEL;
+                check = ( timer.tetrisTimerGetTicks()/1000 ) * 1000;
+            }
     }
+}
+
+bool checkCollision(const SDL_Rect &firstRect, const SDL_Rect &secondRect)
+{
+    if( (firstRect.y + firstRect.h) < (secondRect.y + secondRect.h) )
+    {
+        return false;
+    }
+    return true;
 }
 
 void tetrisTexture::eventHandler(SDL_Event& tetrisEvent){
@@ -167,7 +184,7 @@ void tetrisTexture::eventHandler(SDL_Event& tetrisEvent){
                 velY += SPRITE_VEL;
             break;
         }
-    } else if( (tetrisEvent.type == SDL_KEYUP) && (tetrisEvent.key.repeat == 0) ){
+    } else if(tetrisEvent.type == SDL_KEYUP){
             if(tetrisEvent.key.keysym.sym == SDLK_s){
                 velY -= SPRITE_VEL;
             }
@@ -175,10 +192,17 @@ void tetrisTexture::eventHandler(SDL_Event& tetrisEvent){
 }
 
 void tetrisTexture::move(){
-        spritePos.y += velY;
-        if( (spritePos.y + tetrisTextureHeight) >= BLOCK_SIZE*18){
-        spritePos.y -+ velY;
-        }
+    spritePos.y += velY;
+    if( (spritePos.y + tetrisTextureHeight) >= BLOCK_SIZE*18){
+        spritePos.y -= velY;
+    }
+}
+
+void tetrisTexture::updateCollisionRect(){
+    collisionRect.x = spritePos.x;
+    collisionRect.y = spritePos.y;
+    collisionRect.w = tetrisTextureWidth;
+    collisionRect.h = tetrisTextureHeight;
 }
 
 tetrisTexture::tetrisTexture(){
@@ -187,6 +211,10 @@ tetrisTexture::tetrisTexture(){
     tetrisTextureHeight = 0;
     spritePos.x = 0;
     spritePos.y = 0;
+    collisionRect.x = spritePos.x;
+    collisionRect.y = spritePos.y;
+    collisionRect.w = tetrisTextureWidth;
+    collisionRect.h = tetrisTextureHeight;
     velY = 0;
 }
 

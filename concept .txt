@@ -1,0 +1,29 @@
+concept :
+1. game board
+- dùng ma trận SDL_Rect để biểu diễn board của game
+- mỗi phần tử là một block nhỏ trong board
+ +) trên cùng 1 hàng: - rect info bắt đầu từ x11 = 0,
+x12 = x11 + BLOCK_WIDTH, x13 = x12 + BLOCK_WIDTH...
+xuống dòng đặt lại x = 0 cho dòng đó
+y1x = 0
+y2x = y1x + BLOCK_HEIGHT
+y3x = y2x + BLOCK_HEIGHT
+(mặc định board game được render ở vị trí (0,0), có thể
+thay đổi tùy ý)
+- vậy là xong vấn đề chia board và tọa độ
+2. xử lí block
+- gán cho mỗi phần tử rect một block texture (cùng kích
+thước với 1 block)
+- xử lí việc phần tử đã bị chiếm chỗ hay chưa (dùng thuộc
+tính kiểu bool ?)
+- nếu đã bị chiếm chỗ thì vẽ ra tại đó một block
+(tạm dùng 1 rect và 1 texture để đại diện cho 1 block)
+3. chuyển động
+- sinh vật thể :
++) nếu không có vật thể nào đang chuyển động thì sinh
+vật thể mới ở vị trí mặc định (trung tâm cạnh trên board), mặc định là chưa va chạm
+- chuyển động vật thể (gravity):
++) nếu phía dưới block ngoài cùng của vật không có va chạm(với vật thể khác hoặc đáy game board) thì tiếp tục dịch tất cả block của vật thể hiện tại xuống dưới theo trục y một khoảng BLOCK_HEIGHT.
++) nếu xuất hiện va chạm thì dừng việc dịch vật thể và
+sinh ra vật thể ngẫu nhiên khác.
+- xoay vật thể:

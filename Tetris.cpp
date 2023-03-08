@@ -52,21 +52,21 @@ class tetrisObject{
 public:
     SDL_Rect block;
     bool occupied;
+    bool moving;
     tetrisObject(){
         block = {0, 0, 0, 0};
         occupied = false;
-    }
-    bool isOccupied(){
-        return occupied;
+        moving = false;
     }
 };
 
 bool initSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer);
 void closeSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer, tetrisTexture* tetrisSpriteSheet, TTF_Font*& tetrisFont);
 bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, TTF_Font*& tetrisFont);
-//void setGravity(tetrisTexture* tetrisSpriteSheet, tetrisTimer& timer);
-bool checkCollision(const SDL_Rect &firstRect, const SDL_Rect &secondRect);
-
+vector<vector<tetrisObject>> generateMatrix();
+void setObjectGravity(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer);
+void renderOccupiedBlocks(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer);
+void generateObject(vector<vector<tetrisObject>> &boardMatrix);
 enum tetrisTextureFlags{
     TETRIS_BACKGROUND_TEXTURE = 0,
     TETRIS_SCORE_TEXT = 1,
@@ -82,49 +82,16 @@ int main(int argc, char* argv[]){
     SDL_Renderer* tetrisRenderer = nullptr;
     tetrisTexture tetrisSpriteSheet[TETRIS_TOTAL_IMAGE];
     TTF_Font* tetrisFont = nullptr;
-
-    // chia nho game board thanh ma tran
-    vector<vector<tetrisObject>> boardMatrix(BOARD_ROWS);
-    for(int i = 0; i < BOARD_ROWS; i++){
-        boardMatrix[i] = vector<tetrisObject>(BOARD_COLUMNS);
-        for(int j = 0; j < BOARD_COLUMNS; j++){
-            boardMatrix[i][j].block = {BLOCK_SIZE*(j+2), i*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE};
-        }
-    }
-    // sinh hinh random
-    bool isMoving = false;
-    if(isMoving == false){
-        srand(time(0));
-        int ranNum = rand()%3 + 1;
-        switch(ranNum){
-            case 1:
-                for(int i = 0; i <= 3; i++){
-                    boardMatrix[i][4].occupied = true;
-                }
-            break;
-            case 2:
-                for(int j = 3; j <= 6; j++){
-                    boardMatrix[0][j].occupied = true;
-                }
-            break;
-            case 3:
-                for(int i = 0; i <= 1; i++){
-                    for(int j = 4; j <= 5; j++){
-                        boardMatrix[i][j].occupied = true;
-                    }
-                }
-            break;
-        };
-        isMoving = true;
-    }
-
-
+    tetrisTimer timer;
     if(!initSDL(tetrisWindow, tetrisRenderer)){
         cout << "Failed to Init SDL | " << SDL_GetError() << endl;
     } else {
         if(!loadMedia(tetrisSpriteSheet, tetrisRenderer, tetrisFont)){
             cout << "Load Tetris Media Failed" << endl;
         }
+        vector<vector<tetrisObject>> boardMatrix = generateMatrix();
+        generateObject(boardMatrix);
+        timer.tetrisTimerStart();
         bool quit = false;
         while(!quit){
             SDL_Event tetrisEvent;
@@ -139,22 +106,84 @@ int main(int argc, char* argv[]){
             tetrisSpriteSheet[TETRIS_SCORE_TEXT].renderTexture(570, 360, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_LINES_TEXT].renderTexture(570, 600, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_TIME_TEXT].renderTexture(570, 480, tetrisRenderer, nullptr);
-
-                // ve cac o da bi chiem
-            for(int i = 0; i < BOARD_ROWS; i++){
-                for(int j = 0; j < BOARD_COLUMNS; j++){
-                    if(boardMatrix[i][j].occupied == true){
-                        tetrisSpriteSheet[TETRIS_BLOCK_TEXTURE].renderTexture(boardMatrix[i][j].block.x, boardMatrix[i][j].block.y, tetrisRenderer, nullptr);
-                    }
-                }
-            }
-
+            renderOccupiedBlocks(boardMatrix, tetrisSpriteSheet, tetrisRenderer);
+            setObjectGravity(boardMatrix, timer);
             SDL_RenderPresent(tetrisRenderer);
             SDL_Delay(20);
         }
     }
     closeSDL(tetrisWindow, tetrisRenderer, tetrisSpriteSheet, tetrisFont);
     return 0;
+}
+
+vector<vector<tetrisObject>> generateMatrix(){
+    vector<vector<tetrisObject>> boardMatrix(BOARD_ROWS);
+    for(int i = 0; i < BOARD_ROWS; i++){
+        boardMatrix[i] = vector<tetrisObject>(BOARD_COLUMNS);
+        for(int j = 0; j < BOARD_COLUMNS; j++){
+            boardMatrix[i][j].block = {BLOCK_SIZE*(j+2), i*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE};
+        }
+    }
+    return boardMatrix;
+}
+
+void setObjectGravity(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer){
+    static int check = timer.tetrisTimerGetTicks();
+    if(timer.tetrisTimerGetTicks() - check >= 1000)
+    {
+        for(int i = BOARD_ROWS - 1; i >= 0; i--){
+            for(int j = 0; j < BOARD_COLUMNS; j++){
+                if(boardMatrix[i][j].moving && boardMatrix[i][j].occupied){
+                    if( (i + 1 >= BOARD_ROWS) || boardMatrix[i+1][j].occupied){
+                        boardMatrix[i][j].moving = false;
+                    } else {
+                        boardMatrix[i][j].occupied = false;
+                        boardMatrix[i][j].moving = false;
+                        boardMatrix[i+1][j].occupied = true;
+                        boardMatrix[i+1][j].moving = true;
+                    }
+                }
+            }
+        }
+        check = ( timer.tetrisTimerGetTicks()/1000 ) * 1000;
+    }
+}
+
+void renderOccupiedBlocks(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer){
+    for(int i = 0; i < BOARD_ROWS; i++){
+        for(int j = 0; j < BOARD_COLUMNS; j++){
+            if(boardMatrix[i][j].occupied == true){
+                tetrisSpriteSheet[TETRIS_BLOCK_TEXTURE].renderTexture(boardMatrix[i][j].block.x, boardMatrix[i][j].block.y, tetrisRenderer, nullptr);
+            }
+        }
+    }
+}
+
+void generateObject(vector<vector<tetrisObject>> &boardMatrix){
+    srand(time(0));
+    int ranNum = rand()%3 + 1;
+    switch(ranNum){
+        case 1:
+            for(int i = 0; i <= 3; i++){
+                boardMatrix[i][4].occupied = true;
+                boardMatrix[i][4].moving = true;
+            }
+        break;
+        case 2:
+            for(int j = 3; j <= 6; j++){
+                boardMatrix[0][j].occupied = true;
+                boardMatrix[0][j].moving = true;
+            }
+        break;
+        case 3:
+            for(int i = 0; i <= 1; i++){
+                for(int j = 4; j <= 5; j++){
+                    boardMatrix[i][j].occupied = true;
+                    boardMatrix[i][j].moving = true;
+                }
+            }
+        break;
+    };
 }
 
 bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, TTF_Font*& tetrisFont){
@@ -186,47 +215,6 @@ bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, 
     }
     return success;
 }
-
-//void setGravity(tetrisTexture* tetrisSpriteSheet, tetrisTimer& timer){
-//    for(int i = TETRIS_OBJECT_1; i < TETRIS_TOTAL_IMAGE; i++){
-//            static int check = timer.tetrisTimerGetTicks();
-//            if(timer.tetrisTimerGetTicks() - (check) >= 1000)
-//            {
-//                tetrisSpriteSheet[i].spritePos.y += SPRITE_VEL;
-//                check = ( timer.tetrisTimerGetTicks()/1000 ) * 1000;
-//            }
-//    }
-//}
-
-bool checkCollision(const SDL_Rect &firstRect, const SDL_Rect &secondRect)
-{
-    if( (firstRect.y + firstRect.h) < (secondRect.y + secondRect.h) )
-    {
-        return false;
-    }
-    return true;
-}
-//
-//void tetrisTexture::eventHandler(SDL_Event& tetrisEvent){
-//    if( (tetrisEvent.type == SDL_KEYDOWN) && (tetrisEvent.key.repeat == 0) ){
-//        switch(tetrisEvent.key.keysym.sym){
-//            case SDLK_a:
-//                spritePos.x -= SPRITE_VEL;
-//            break;
-//            case SDLK_d:
-//                spritePos.x += SPRITE_VEL;
-//            break;
-//            case SDLK_s:
-//                velY += SPRITE_VEL;
-//            break;
-//        }
-//    } else if(tetrisEvent.type == SDL_KEYUP){
-//            if(tetrisEvent.key.keysym.sym == SDLK_s){
-//                velY -= SPRITE_VEL;
-//            }
-//    }
-//}
-
 
 tetrisTexture::tetrisTexture(){
     mTexture = nullptr;

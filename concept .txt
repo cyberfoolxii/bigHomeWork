@@ -23,7 +23,7 @@ tính kiểu bool ?)
 +) nếu không có vật thể nào đang chuyển động thì sinh
 vật thể mới ở vị trí mặc định (trung tâm cạnh trên board), mặc định là chưa va chạm
 - chuyển động vật thể (gravity):
-+) nếu phía dưới block ngoài cùng của vật không có va chạm(với vật thể khác hoặc đáy game board) thì tiếp tục dịch tất cả block của vật thể hiện tại xuống dưới theo trục y một khoảng BLOCK_HEIGHT.
++) nếu block không có block phía dưới nào nữa của vật không có va chạm(với vật thể khác hoặc đáy game board) thì tiếp tục dịch tất cả block của vật thể hiện tại xuống dưới theo trục y một khoảng BLOCK_HEIGHT.
 +) nếu xuất hiện va chạm thì dừng việc dịch vật thể và
 sinh ra vật thể ngẫu nhiên khác.
 - xoay vật thể:

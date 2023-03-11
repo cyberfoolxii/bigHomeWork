@@ -31,6 +31,8 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="TETRIS_Def.cpp" />
+		<Unit filename="TETRIS_Utils.h" />
 		<Unit filename="Tetris.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

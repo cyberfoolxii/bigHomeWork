@@ -1,20 +1,10 @@
-#include <iostream>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <string>
-#include <vector>
-#include <cstdlib>
-#include <ctime>
-#include <sstream>
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 720
+#include "TETRIS_Utils.h"
 using namespace std;
 const string WINDOW_TITLE = "Tetris Game - Cuong Nguyen";
 const int BOARD_ROWS = 18;
 const int BOARD_COLUMNS = 10;
 const int BLOCK_SIZE = 40;
-
+const int OBJECT_VEL = 1000;
 class tetrisTimer{
 public:
     tetrisTimer();
@@ -64,9 +54,10 @@ bool initSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer);
 void closeSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer, tetrisTexture* tetrisSpriteSheet, TTF_Font*& tetrisFont);
 bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, TTF_Font*& tetrisFont);
 vector<vector<tetrisObject>> generateMatrix();
-void setObjectGravity(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer);
+void setObjectGravity(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, const int &VEL);
 void renderOccupiedBlocks(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer);
 void generateObject(vector<vector<tetrisObject>> &boardMatrix);
+void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, int &VEL);
 enum tetrisTextureFlags{
     TETRIS_BACKGROUND_TEXTURE = 0,
     TETRIS_SCORE_TEXT = 1,
@@ -83,6 +74,7 @@ int main(int argc, char* argv[]){
     tetrisTexture tetrisSpriteSheet[TETRIS_TOTAL_IMAGE];
     TTF_Font* tetrisFont = nullptr;
     tetrisTimer timer;
+    int VEL = OBJECT_VEL;
     if(!initSDL(tetrisWindow, tetrisRenderer)){
         cout << "Failed to Init SDL | " << SDL_GetError() << endl;
     } else {
@@ -93,12 +85,14 @@ int main(int argc, char* argv[]){
         timer.tetrisTimerStart();
         bool quit = false;
         while(!quit){
+            setObjectGravity(boardMatrix, timer, VEL);
             SDL_Event tetrisEvent;
             while(SDL_PollEvent(&tetrisEvent) != 0){
                 if(tetrisEvent.type == SDL_QUIT){
                     quit = true;
                 }
-                // event handler here
+
+                eventHandler(tetrisEvent, boardMatrix, VEL);
             }
             SDL_RenderClear(tetrisRenderer);
             tetrisSpriteSheet[TETRIS_BACKGROUND_TEXTURE].renderTexture(0, 0, tetrisRenderer, nullptr);
@@ -107,13 +101,54 @@ int main(int argc, char* argv[]){
             tetrisSpriteSheet[TETRIS_TIME_TEXT].renderTexture(570, 480, tetrisRenderer, nullptr);
             generateObject(boardMatrix);
             renderOccupiedBlocks(boardMatrix, tetrisSpriteSheet, tetrisRenderer);
-            setObjectGravity(boardMatrix, timer);
             SDL_RenderPresent(tetrisRenderer);
             SDL_Delay(20);
         }
     }
     closeSDL(tetrisWindow, tetrisRenderer, tetrisSpriteSheet, tetrisFont);
     return 0;
+}
+
+void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, int &VEL){
+    if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
+        switch(e.key.keysym.sym){
+            case SDLK_a:
+                for(int i = 0; i < BOARD_ROWS; i++){
+                    for(int j =  0; j < BOARD_COLUMNS; j++){
+                        if(j > 0 && boardMatrix[i][j].occupied && boardMatrix[i][j].moving){
+                            if(!boardMatrix[i][j-1].occupied){
+                                boardMatrix[i][j].occupied = false;
+                                boardMatrix[i][j].moving = false;
+                                boardMatrix[i][j-1].occupied = true;
+                                boardMatrix[i][j-1].moving = true;
+                            }
+                        }
+                    }
+                }
+            break;
+            case SDLK_d:
+                for(int i = 0; i < BOARD_ROWS; i++){
+                    for(int j = BOARD_COLUMNS - 1; j >=0; j--){
+                        if(j < BOARD_COLUMNS - 1 && boardMatrix[i][j].occupied && boardMatrix[i][j].moving){
+                            if(!boardMatrix[i][j+1].occupied){
+                                boardMatrix[i][j].occupied = false;
+                                boardMatrix[i][j].moving = false;
+                                boardMatrix[i][j+1].occupied = true;
+                                boardMatrix[i][j+1].moving = true;
+                            }
+                        }
+                    }
+                }
+            break;
+            case SDLK_s:
+                VEL -= 900;
+            break;
+        };
+    } else if(e.type == SDL_KEYUP && e.key.repeat == 0){
+        if(e.key.keysym.sym == SDLK_s){
+            VEL += 900;
+        }
+    }
 }
 
 vector<vector<tetrisObject>> generateMatrix(){
@@ -127,37 +162,25 @@ vector<vector<tetrisObject>> generateMatrix(){
     return boardMatrix;
 }
 
-void setObjectGravity(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer){
+void setObjectGravity(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, const int &VEL){
     static int check = timer.tetrisTimerGetTicks();
-    if(timer.tetrisTimerGetTicks() - check >= 1000)
+    if(timer.tetrisTimerGetTicks() - check >= VEL)
     {
-        for(int i = BOARD_ROWS - 1; i >= 0; i--){
-            int c = 0;
+        for(int i = BOARD_ROWS - 1; i>=0; i--){
             for(int j = 0; j < BOARD_COLUMNS; j++){
-                if(boardMatrix[i][j].moving && boardMatrix[i][j].occupied){
-                    if(i + 1 < BOARD_ROWS){
-                        c += boardMatrix[i+1][j].occupied;
-                    } else {
-                        c++;
+                if(i + 1 < BOARD_ROWS && boardMatrix[i][j].occupied && boardMatrix[i][j].moving){
+                    if(!boardMatrix[i+1][j].occupied){
+                        boardMatrix[i][j].occupied = false;
+                        boardMatrix[i][j].moving = false;
+                        boardMatrix[i+1][j].occupied = true;
+                        boardMatrix[i+1][j].moving = true;
                     }
-                }
-            }
-            if(c == 0){
-                for(int k = 0; k < BOARD_COLUMNS; k++){
-                    if(boardMatrix[i][k].moving && boardMatrix[i][k].occupied){
-                        boardMatrix[i][k].occupied = false;
-                        boardMatrix[i][k].moving = false;
-                        boardMatrix[i+1][k].occupied = true;
-                        boardMatrix[i+1][k].moving = true;
-                    }
-                }
-            } else {
-                for(int k = 0; k < BOARD_COLUMNS; k++){
-                    boardMatrix[i][k].moving = false;
+                } else {
+                    boardMatrix[i][j].moving = false;
                 }
             }
         }
-        check = ( timer.tetrisTimerGetTicks()/1000 ) * 1000;
+        check = timer.tetrisTimerGetTicks();
     }
 }
 

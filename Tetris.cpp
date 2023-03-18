@@ -66,21 +66,102 @@ public:
     }
 };
 
+class tetrisBrick{
+    //tạm dùng mảng sdl point để giữ các vị trí index của khối gạch trong board
+    public:
+    vector<SDL_Point> idx;
+    void pickShape(){
+        srand(time(0));
+        switch(rand()%8 + 1){
+            case 1: // _
+                idx = {
+                    {0, 3},
+                    {0, 4},
+                    {0, 5},
+                    {0, 6}
+                    };
+            break;
+            case 2: // I
+                idx = {
+                    {0, 4},
+                    {1, 4},
+                    {2, 4},
+                    {3, 4}
+                };
+            break;
+            case 3: // [|]
+                idx = {
+                    {0, 4},
+                    {0, 5},
+                    {1, 4},
+                    {1, 5}
+                };
+            break;
+            case 4: // w
+                idx = {
+                    {0, 4},
+                    {1, 3},
+                    {1, 4},
+                    {1, 5}
+                    };
+            break;
+            case 5: // z
+                idx = {
+                    {0, 3},
+                    {0, 4},
+                    {1, 4},
+                    {1, 5}
+                };
+            break;
+            case 6: // s
+                idx = {
+                    {0, 5},
+                    {0, 6},
+                    {1, 4},
+                    {1, 5}
+                };
+            break;
+            case 7: // L
+                idx = {
+                    {0, 4},
+                    {1, 4},
+                    {2, 4},
+                    {2, 5}
+                };
+            break;
+            case 8: // J
+                idx = {
+                    {0, 5},
+                    {1, 5},
+                    {2, 5},
+                    {2, 4}
+                };
+            break;
+        };
+    }
+    tetrisBrick(){
+        pickShape();
+    }
+};
 bool initSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer);
 void closeSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer, tetrisTexture* tetrisSpriteSheet, TTF_Font*& tetrisFont);
 bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, TTF_Font*& tetrisFont);
 vector<vector<tetrisObject>> generateMatrix();
 
-void renderBoard(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer);
+void renderBoard(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, const tetrisBrick &brick);
 
-void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, int &VEL);
+void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, int &VEL);
 
 bool canFall(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 bool canLeft(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 bool canRight(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
-void moveLeft(vector<vector<tetrisObject>> &boardMatrix);
-void moveRight(vector<vector<tetrisObject>> &boardMatrix);
-void fallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, const int &VEL);
+void moveLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+void moveRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+void fallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const int &VEL);
+bool canBrickFall(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+bool canBrickLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+bool canBrickRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+void setBrick(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 
 int main(int argc, char* argv[]){
     SDL_Window* tetrisWindow = nullptr;
@@ -91,17 +172,15 @@ int main(int argc, char* argv[]){
     int VEL = OBJECT_VEL;
     //stringstream sstream;
 
+    tetrisBrick brick;
+
     if(!initSDL(tetrisWindow, tetrisRenderer)){
         cout << "Failed to Init SDL | " << SDL_GetError() << endl;
     } else {
         if(!loadMedia(tetrisSpriteSheet, tetrisRenderer, tetrisFont)){
             cout << "Load Tetris Media Failed" << endl;
         }
-        vector<vector<tetrisObject>> boardMatrix = generateMatrix();
-
-        //test
-        boardMatrix[0][3].occupied = true;
-
+        vector<vector<tetrisObject>> gameBoard = generateMatrix();
         timer.tetrisTimerStart();
         bool quit = false;
         while(!quit){
@@ -110,17 +189,29 @@ int main(int argc, char* argv[]){
                 if(tetrisEvent.type == SDL_QUIT){
                     quit = true;
                 }
-                eventHandler(tetrisEvent, boardMatrix, VEL);
+                eventHandler(tetrisEvent, gameBoard, brick, VEL);
             }
             SDL_RenderClear(tetrisRenderer);
             tetrisSpriteSheet[TETRIS_BACKGROUND_TEXTURE].renderTexture(0, 0, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_SCORE_TEXT].renderTexture(570, 360, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_LINES_TEXT].renderTexture(570, 600, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_TIME_TEXT].renderTexture(570, 480, tetrisRenderer, nullptr);
-            renderBoard(boardMatrix, tetrisSpriteSheet, tetrisRenderer);
 
-            fallDown(boardMatrix, timer, VEL);
+            setBrick(gameBoard, brick);
 
+            renderBoard(gameBoard, tetrisSpriteSheet, tetrisRenderer, brick);
+
+            fallDown(gameBoard, timer, brick, VEL);
+            static int check = timer.tetrisTimerGetTicks();
+            if(timer.tetrisTimerGetTicks() - check >= VEL)
+            {
+                            cout << canFall(gameBoard, brick.idx[0].x, brick.idx[0].y) << endl;
+                cout << canFall(gameBoard, brick.idx[1].x, brick.idx[1].y) << endl;
+                cout << canFall(gameBoard, brick.idx[2].x, brick.idx[2].y) << endl;
+                cout << canFall(gameBoard, brick.idx[3].x, brick.idx[3].y) << endl;
+                cout << endl;
+                check = timer.tetrisTimerGetTicks();
+            }
             SDL_RenderPresent(tetrisRenderer);
             SDL_Delay(20);
         }
@@ -128,87 +219,110 @@ int main(int argc, char* argv[]){
     closeSDL(tetrisWindow, tetrisRenderer, tetrisSpriteSheet, tetrisFont);
     return 0;
 }
+void setBrick(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+    bool check = true;
+    if(canBrickFall(boardMatrix, brick)){
+        check = false;
+    } else {
+        for(int i = 0; i < 4; i++){
+            boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].occupied = true;
+        }
+    }
+    if(check){
+        brick.pickShape();
+    }
+}
+bool canBrickLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+    bool check = true;
+    for(int i = 0; i < 4; i++){
+        if(!canLeft(boardMatrix, brick.idx[i].x, brick.idx[i].y)){
+            check = false;
+        }
+    }
+    return check;
+}
 
+bool canBrickRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+    bool check = true;
+    for(int i = 0; i < 4; i++){
+        if(!canRight(boardMatrix, brick.idx[i].x, brick.idx[i].y)){
+            check = false;
+        }
+    }
+    return check;
+}
+
+bool canBrickFall(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+    bool check = true;
+    for(int i = 0; i < 4; i++){
+        if(!canFall(boardMatrix, brick.idx[i].x, brick.idx[i].y)){
+            check = false;
+        }
+    }
+    return check;
+}
 bool canFall(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j){
     bool check = false;
-    if(boardMatrix[i][j].occupied){
         if(i + 1 <= BOARD_ROWS - 1){
             if(!boardMatrix[i+1][j].occupied){
                 check = true;
             }
         }
-    }
     return check;
 }
-
 bool canLeft(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j){
     bool check = false;
-    if(boardMatrix[i][j].occupied){
         if(j - 1 >= 0){
             if(!boardMatrix[i][j-1].occupied){
                 check = true;
             }
         }
-    }
     return check;
 }
-
 bool canRight(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j){
     bool check = false;
-    if(boardMatrix[i][j].occupied){
         if(j + 1 <= BOARD_COLUMNS - 1){
             if(!boardMatrix[i][j+1].occupied){
                 check = true;
             }
         }
-    }
     return check;
 }
-void moveLeft(vector<vector<tetrisObject>> &boardMatrix){
-    for(int i = 0; i < BOARD_ROWS; i++){
-        for(int j = 0; j < BOARD_COLUMNS; j++){
-            if(canFall(boardMatrix, i, j) && canLeft(boardMatrix, i, j)){
-                boardMatrix[i][j].occupied = false;
-                boardMatrix[i][j-1].occupied = true;
-            }
-        }
-    }
-}
-void moveRight(vector<vector<tetrisObject>> &boardMatrix){
-    for(int i = 0; i < BOARD_ROWS; i++){
-        for(int j = BOARD_COLUMNS - 1; j >= 0; j--){
-            if(canFall(boardMatrix, i, j) && canRight(boardMatrix, i, j)){
-                boardMatrix[i][j].occupied = false;
-                boardMatrix[i][j+1].occupied = true;
-            }
-        }
-    }
-}
+void moveLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+    if(canBrickLeft(boardMatrix, brick)){
+        for(int i = 0; i < 4; i++){
 
-void fallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, const int &VEL){
+                brick.idx[i].y--;
+        }
+    }
+}
+void moveRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+    if(canBrickRight(boardMatrix, brick)){
+        for(int i = 0; i < 4; i++){
+                brick.idx[i].y++;
+        }
+    }
+}
+void fallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const int &VEL){
     static int check = timer.tetrisTimerGetTicks();
     if(timer.tetrisTimerGetTicks() - check >= VEL)
     {
-        for(int i = BOARD_ROWS - 1; i >= 0; i--){
-            for(int j = 0; j < BOARD_COLUMNS; j++){
-                if(canFall(boardMatrix, i, j)){
-                    boardMatrix[i][j].occupied = false;
-                    boardMatrix[i+1][j].occupied = true;
-                }
+        if(canBrickFall(boardMatrix, brick)){
+            for(int i = 0; i < 4; i++){
+                brick.idx[i].x++;
             }
         }
         check = timer.tetrisTimerGetTicks();
     }
 }
-
-void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, int &VEL){
+void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, int &VEL){
     if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
         switch(e.key.keysym.sym){
             case SDLK_a:
-                moveLeft(boardMatrix);
+                moveLeft(boardMatrix, brick);
             break;
             case SDLK_d:
-                moveRight(boardMatrix);
+                moveRight(boardMatrix, brick);
             break;
             case SDLK_s:
                 VEL -= 900;
@@ -232,7 +346,7 @@ vector<vector<tetrisObject>> generateMatrix(){
     return boardMatrix;
 }
 
-void renderBoard(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer){
+void renderBoard(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, const tetrisBrick &brick){
     for(int i = 0; i < BOARD_ROWS; i++){
         for(int j = 0; j < BOARD_COLUMNS; j++){
             if(boardMatrix[i][j].occupied){
@@ -240,8 +354,10 @@ void renderBoard(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture*
             }
         }
     }
+    for(int i = 0; i < 4; i++){
+        tetrisSpriteSheet[TETRIS_BLOCK_TEXTURE_1].renderTexture(boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].coordinate.x, boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].coordinate.y, tetrisRenderer, nullptr);
+    }
 }
-
 
 bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, TTF_Font*& tetrisFont){
     bool success = true;

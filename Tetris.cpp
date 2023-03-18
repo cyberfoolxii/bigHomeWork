@@ -59,6 +59,7 @@ private:
 class tetrisObject{
 public:
     SDL_Point coordinate;
+    tetrisTextureFlags color;
     bool occupied;
     tetrisObject(){
         coordinate = {0, 0};
@@ -69,6 +70,7 @@ public:
 class tetrisBrick{
     //tạm dùng mảng sdl point để giữ các vị trí index của khối gạch trong board
     public:
+    tetrisTextureFlags color;
     vector<SDL_Point> idx;
     void pickShape(){
         srand(time(0));
@@ -139,7 +141,30 @@ class tetrisBrick{
             break;
         };
     }
+    void pickColor(){
+        srand(time(0));
+        switch(rand()%TETRIS_BLOCK_TEXTURE_5 + TETRIS_BLOCK_TEXTURE){
+            case TETRIS_BLOCK_TEXTURE:
+                color = TETRIS_BLOCK_TEXTURE;
+            break;
+            case TETRIS_BLOCK_TEXTURE_1:
+                color = TETRIS_BLOCK_TEXTURE_1;
+            case TETRIS_BLOCK_TEXTURE_2:
+                color = TETRIS_BLOCK_TEXTURE_2;
+            break;
+            case TETRIS_BLOCK_TEXTURE_3:
+                color = TETRIS_BLOCK_TEXTURE_3;
+            break;
+            case TETRIS_BLOCK_TEXTURE_4:
+                color = TETRIS_BLOCK_TEXTURE_4;
+            break;
+            case TETRIS_BLOCK_TEXTURE_5:
+                color = TETRIS_BLOCK_TEXTURE_5;
+            break;
+        }
+    }
     tetrisBrick(){
+        pickColor();
         pickShape();
     }
 };
@@ -196,22 +221,9 @@ int main(int argc, char* argv[]){
             tetrisSpriteSheet[TETRIS_SCORE_TEXT].renderTexture(570, 360, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_LINES_TEXT].renderTexture(570, 600, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_TIME_TEXT].renderTexture(570, 480, tetrisRenderer, nullptr);
-
             setBrick(gameBoard, brick);
-
             renderBoard(gameBoard, tetrisSpriteSheet, tetrisRenderer, brick);
-
             fallDown(gameBoard, timer, brick, VEL);
-            static int check = timer.tetrisTimerGetTicks();
-            if(timer.tetrisTimerGetTicks() - check >= VEL)
-            {
-                            cout << canFall(gameBoard, brick.idx[0].x, brick.idx[0].y) << endl;
-                cout << canFall(gameBoard, brick.idx[1].x, brick.idx[1].y) << endl;
-                cout << canFall(gameBoard, brick.idx[2].x, brick.idx[2].y) << endl;
-                cout << canFall(gameBoard, brick.idx[3].x, brick.idx[3].y) << endl;
-                cout << endl;
-                check = timer.tetrisTimerGetTicks();
-            }
             SDL_RenderPresent(tetrisRenderer);
             SDL_Delay(20);
         }
@@ -226,9 +238,11 @@ void setBrick(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
     } else {
         for(int i = 0; i < 4; i++){
             boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].occupied = true;
+            boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].color = brick.color;
         }
     }
     if(check){
+        brick.pickColor();
         brick.pickShape();
     }
 }
@@ -350,12 +364,12 @@ void renderBoard(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture*
     for(int i = 0; i < BOARD_ROWS; i++){
         for(int j = 0; j < BOARD_COLUMNS; j++){
             if(boardMatrix[i][j].occupied){
-                tetrisSpriteSheet[TETRIS_BLOCK_TEXTURE_1].renderTexture(boardMatrix[i][j].coordinate.x, boardMatrix[i][j].coordinate.y, tetrisRenderer, nullptr);
+                tetrisSpriteSheet[boardMatrix[i][j].color].renderTexture(boardMatrix[i][j].coordinate.x, boardMatrix[i][j].coordinate.y, tetrisRenderer, nullptr);
             }
         }
     }
     for(int i = 0; i < 4; i++){
-        tetrisSpriteSheet[TETRIS_BLOCK_TEXTURE_1].renderTexture(boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].coordinate.x, boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].coordinate.y, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[brick.color].renderTexture(boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].coordinate.x, boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].coordinate.y, tetrisRenderer, nullptr);
     }
 }
 

@@ -8,6 +8,7 @@ const int OBJECT_VEL = 1000;
 
 enum tetrisTextureFlags{
     TETRIS_BACKGROUND_TEXTURE,
+    TETRIS_GAMEOVER_TEXTURE,
     TETRIS_SCORE_TEXT,
     TETRIS_SCORE_COUNT,
     TETRIS_LINES_TEXT,
@@ -59,7 +60,7 @@ private:
 class tetrisObject{
 public:
     SDL_Point coordinate;
-    tetrisTextureFlags color;
+    tetrisTextureFlags color = TETRIS_BLOCK_TEXTURE;
     bool occupied;
     tetrisObject(){
         coordinate = {0, 0};
@@ -70,7 +71,7 @@ public:
 class tetrisBrick{
     //tạm dùng mảng sdl point để giữ các vị trí index của khối gạch trong board
     public:
-    tetrisTextureFlags color;
+    tetrisTextureFlags color = TETRIS_BLOCK_TEXTURE;
     vector<SDL_Point> idx;
     void pickShape(){
         srand(time(0));
@@ -180,14 +181,23 @@ void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetri
 bool canFall(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 bool canLeft(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 bool canRight(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
-void moveLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
-void moveRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
-void fallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const int &VEL);
+void brickMoveLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+void brickMoveRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+void brickFallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const int &VEL);
 bool canBrickFall(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 bool canBrickLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 bool canBrickRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
-void setBrick(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+void renderDataAndSetBrick(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, tetrisTexture* tetrisSpriteSheet, tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer);
 
+bool isGameOver(vector<vector<tetrisObject>> &boardMatrix){
+    bool check = false;
+    for(int j = 0; j < BOARD_COLUMNS; j++){
+        if(boardMatrix[0][j].occupied){
+            check = true;
+        }
+    }
+    return check;
+}
 int main(int argc, char* argv[]){
     SDL_Window* tetrisWindow = nullptr;
     SDL_Renderer* tetrisRenderer = nullptr;
@@ -195,10 +205,7 @@ int main(int argc, char* argv[]){
     TTF_Font* tetrisFont = nullptr;
     tetrisTimer timer;
     int VEL = OBJECT_VEL;
-    //stringstream sstream;
-
     tetrisBrick brick;
-
     if(!initSDL(tetrisWindow, tetrisRenderer)){
         cout << "Failed to Init SDL | " << SDL_GetError() << endl;
     } else {
@@ -221,9 +228,16 @@ int main(int argc, char* argv[]){
             tetrisSpriteSheet[TETRIS_SCORE_TEXT].renderTexture(570, 360, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_LINES_TEXT].renderTexture(570, 600, tetrisRenderer, nullptr);
             tetrisSpriteSheet[TETRIS_TIME_TEXT].renderTexture(570, 480, tetrisRenderer, nullptr);
-            setBrick(gameBoard, brick);
+            tetrisSpriteSheet[TETRIS_SCORE_COUNT].renderTexture(570, 400, tetrisRenderer, nullptr);
+            tetrisSpriteSheet[TETRIS_LINES_COUNT].renderTexture(570, 640, tetrisRenderer, nullptr);
+            tetrisSpriteSheet[TETRIS_TIME_COUNT].renderTexture(570, 520, tetrisRenderer, nullptr);
             renderBoard(gameBoard, tetrisSpriteSheet, tetrisRenderer, brick);
-            fallDown(gameBoard, timer, brick, VEL);
+            if(!isGameOver(gameBoard)){
+                renderDataAndSetBrick(gameBoard, brick, tetrisSpriteSheet, timer, tetrisFont, tetrisRenderer);
+            } else {
+                tetrisSpriteSheet[TETRIS_GAMEOVER_TEXTURE].renderTexture(80, 0, tetrisRenderer, nullptr);
+            }
+            brickFallDown(gameBoard, timer, brick, VEL);
             SDL_RenderPresent(tetrisRenderer);
             SDL_Delay(20);
         }
@@ -231,20 +245,50 @@ int main(int argc, char* argv[]){
     closeSDL(tetrisWindow, tetrisRenderer, tetrisSpriteSheet, tetrisFont);
     return 0;
 }
-void setBrick(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
-    bool check = true;
-    if(canBrickFall(boardMatrix, brick)){
-        check = false;
-    } else {
+void renderDataAndSetBrick(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, tetrisTexture* tetrisSpriteSheet, tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer){
+    static int countedScore = 0;
+    static int countedLines = 0;
+    int currentLines = 0;
+    stringstream sstream;
+    if(!canBrickFall(boardMatrix, brick)){
         for(int i = 0; i < 4; i++){
             boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].occupied = true;
             boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].color = brick.color;
         }
-    }
-    if(check){
+        for(int i = 0; i < BOARD_ROWS; i++){
+            bool check = true;
+            for(int j = 0; j < BOARD_COLUMNS; j++){
+                if(!boardMatrix[i][j].occupied) check = false;
+            }
+            if(check){
+                currentLines++;
+                for(int k = i; k > 0; k--){
+                    for(int z = 0; z < BOARD_COLUMNS; z++){
+                        boardMatrix[k][z].occupied = boardMatrix[k-1][z].occupied;
+                    }
+                }
+            }
+        }
+        countedLines += currentLines;
+        countedScore += 10*(currentLines*currentLines);
         brick.pickColor();
         brick.pickShape();
     }
+    sstream.str("");
+    sstream << countedScore;
+    tetrisSpriteSheet[TETRIS_SCORE_COUNT].loadFromText(font, sstream.str().c_str(), tetrisRenderer);
+
+    sstream.str("");
+    sstream << countedLines;
+    tetrisSpriteSheet[TETRIS_LINES_COUNT].loadFromText(font, sstream.str().c_str(), tetrisRenderer);
+
+    sstream.str("");
+    if(timer.tetrisTimerGetTicks() >= 60000){
+        sstream << timer.tetrisTimerGetTicks()/60000 << ':' << timer.tetrisTimerGetTicks()/1000 - 60*(timer.tetrisTimerGetTicks()/60000);
+    } else {
+        sstream << timer.tetrisTimerGetTicks()/60000 << ':' << timer.tetrisTimerGetTicks()/1000;
+    }
+    tetrisSpriteSheet[TETRIS_TIME_COUNT].loadFromText(font, sstream.str().c_str(), tetrisRenderer);
 }
 bool canBrickLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
     bool check = true;
@@ -302,7 +346,7 @@ bool canRight(vector<vector<tetrisObject>> &boardMatrix, const int &i, const int
         }
     return check;
 }
-void moveLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+void brickMoveLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
     if(canBrickLeft(boardMatrix, brick)){
         for(int i = 0; i < 4; i++){
 
@@ -310,14 +354,14 @@ void moveLeft(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
         }
     }
 }
-void moveRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+void brickMoveRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
     if(canBrickRight(boardMatrix, brick)){
         for(int i = 0; i < 4; i++){
                 brick.idx[i].y++;
         }
     }
 }
-void fallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const int &VEL){
+void brickFallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const int &VEL){
     static int check = timer.tetrisTimerGetTicks();
     if(timer.tetrisTimerGetTicks() - check >= VEL)
     {
@@ -331,15 +375,21 @@ void fallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetr
 }
 void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, int &VEL){
     if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
+            if(isGameOver(boardMatrix)){
+                boardMatrix = generateMatrix();
+            }
         switch(e.key.keysym.sym){
             case SDLK_a:
-                moveLeft(boardMatrix, brick);
+                brickMoveLeft(boardMatrix, brick);
             break;
             case SDLK_d:
-                moveRight(boardMatrix, brick);
+                brickMoveRight(boardMatrix, brick);
             break;
             case SDLK_s:
                 VEL -= 900;
+            break;
+            case SDLK_w:
+
             break;
         };
     } else if(e.type == SDL_KEYUP && e.key.repeat == 0){
@@ -418,6 +468,10 @@ bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, 
     }
     if(!tetrisSpriteSheet[TETRIS_BLOCK_TEXTURE_5].loadFromFile("textures/block5.png", tetrisRenderer)){
         cout << "Load Tetris Block Texture Failed" << endl;
+        success = false;
+    }
+    if(!tetrisSpriteSheet[TETRIS_GAMEOVER_TEXTURE].loadFromFile("textures/gameover.png", tetrisRenderer)){
+        cout << "Load Tetris Game Over Texture Failed" << endl;
         success = false;
     }
     return success;

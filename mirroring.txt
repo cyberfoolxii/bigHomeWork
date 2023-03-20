@@ -1,0 +1,12 @@
+save the current row and column index of the pivot block
+
+array[m][n]
+
+mirror:
+
+newArray[m][n]
+
+for i = 0 -> m
+for j = 0 -> n
+
+newArray[i][n - 1 - j] = array[i][j]

@@ -71,12 +71,16 @@ public:
 class tetrisBrick{
     //tạm dùng mảng sdl point để giữ các vị trí index của khối gạch trong board
     public:
+    int shapeCheck = 0;
     tetrisTextureFlags color = TETRIS_BLOCK_TEXTURE;
     vector<SDL_Point> idx;
+    int randNum;
     void pickShape(){
+        shapeCheck = 0;
         srand(time(0));
-        switch(rand()%8 + 1){
-            case 1: // _
+        randNum = rand()%6;
+        switch(randNum){
+            case 0: // _
                 idx = {
                     {0, 3},
                     {0, 4},
@@ -84,15 +88,15 @@ class tetrisBrick{
                     {0, 6}
                     };
             break;
-            case 2: // I
-                idx = {
-                    {0, 4},
-                    {1, 4},
-                    {2, 4},
-                    {3, 4}
-                };
+//            case 1: // I
+//                idx = {
+//                    {0, 4},
+//                    {1, 4},
+//                    {2, 4},
+//                    {3, 4}
+//                };
             break;
-            case 3: // [|]
+            case 1: // [|]
                 idx = {
                     {0, 4},
                     {0, 5},
@@ -100,7 +104,7 @@ class tetrisBrick{
                     {1, 5}
                 };
             break;
-            case 4: // w
+            case 2: // w
                 idx = {
                     {0, 4},
                     {1, 3},
@@ -108,7 +112,7 @@ class tetrisBrick{
                     {1, 5}
                     };
             break;
-            case 5: // z
+            case 3: // z
                 idx = {
                     {0, 3},
                     {0, 4},
@@ -116,7 +120,7 @@ class tetrisBrick{
                     {1, 5}
                 };
             break;
-            case 6: // s
+            case 4: // s
                 idx = {
                     {0, 5},
                     {0, 6},
@@ -124,7 +128,7 @@ class tetrisBrick{
                     {1, 5}
                 };
             break;
-            case 7: // L
+            case 5: // L
                 idx = {
                     {0, 4},
                     {1, 4},
@@ -132,7 +136,7 @@ class tetrisBrick{
                     {2, 5}
                 };
             break;
-            case 8: // J
+            case 6: // J
                 idx = {
                     {0, 5},
                     {1, 5},
@@ -197,6 +201,184 @@ bool isGameOver(vector<vector<tetrisObject>> &boardMatrix){
         }
     }
     return check;
+}
+void convertCoor(vector<vector<tetrisObject>> &boardMatrix, char shape[5][5], tetrisBrick &brick){
+    int k = 0;
+    for(int i = 0; i < 5; i++){
+        for(int j = 0; j < 5 ; j++){
+            if(shape[i][j] == 'x'){
+                brick.idx[k].x = i;
+                brick.idx[k].y = j;
+                k++;
+            }
+        }
+    }
+}
+void rotate(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+    switch(brick.randNum){
+        case 0:
+            if(brick.shapeCheck == 0){
+                brick.idx[0].x = brick.idx[1].x - 1;
+                brick.idx[0].y = brick.idx[1].y;
+                brick.idx[2].x = brick.idx[1].x + 1;
+                brick.idx[2].y = brick.idx[1].y;
+                brick.idx[3].x = brick.idx[1].x + 2;
+                brick.idx[3].y = brick.idx[1].y;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 1){
+                brick.idx[0].x = brick.idx[1].x;
+                brick.idx[0].y = brick.idx[1].y - 1;
+                brick.idx[2].x = brick.idx[1].x;
+                brick.idx[2].y = brick.idx[1].y + 1;
+                brick.idx[3].x = brick.idx[1].x;
+                brick.idx[3].y = brick.idx[1].y + 2;
+                brick.shapeCheck = 0;
+            }
+        break;
+        case 2:
+            if(brick.shapeCheck == 0){
+                brick.idx[0].x = brick.idx[2].x;
+                brick.idx[0].y = brick.idx[2].y + 1;
+                brick.idx[1].x = brick.idx[2].x - 1;
+                brick.idx[1].y = brick.idx[2].y;
+                brick.idx[3].x = brick.idx[2].x + 1;
+                brick.idx[3].y = brick.idx[2].y;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 1){
+                brick.idx[0].x = brick.idx[2].x;
+                brick.idx[0].y = brick.idx[2].y - 1;
+                brick.idx[1].x = brick.idx[2].x;
+                brick.idx[1].y = brick.idx[2].y + 1;
+                brick.idx[3].x = brick.idx[2].x + 1;
+                brick.idx[3].y = brick.idx[2].y;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 2){
+                brick.idx[0].x = brick.idx[2].x;
+                brick.idx[0].y = brick.idx[2].y - 1;
+                brick.idx[1].x = brick.idx[2].x - 1;
+                brick.idx[1].y = brick.idx[2].y;
+                brick.idx[3].x = brick.idx[2].x + 1;
+                brick.idx[3].y = brick.idx[2].y;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 3){
+                brick.idx[0].x = brick.idx[2].x - 1;
+                brick.idx[0].y = brick.idx[2].y;
+                brick.idx[1].x = brick.idx[2].x;
+                brick.idx[1].y = brick.idx[2].y + 1;
+                brick.idx[3].x = brick.idx[2].x;
+                brick.idx[3].y = brick.idx[2].y - 1;
+                brick.shapeCheck = 0;
+            }
+        break;
+        case 3:
+            if(brick.shapeCheck == 0){
+                brick.idx[0].x = brick.idx[1].x;
+                brick.idx[0].y = brick.idx[1].y - 1;
+                brick.idx[2].x = brick.idx[1].x - 1;
+                brick.idx[2].y = brick.idx[1].y;
+                brick.idx[3].x = brick.idx[1].x + 1;
+                brick.idx[3].y = brick.idx[1].y - 1;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 1){
+                brick.idx[0].x = brick.idx[1].x;
+                brick.idx[0].y = brick.idx[1].y - 1;
+                brick.idx[2].x = brick.idx[1].x + 1;
+                brick.idx[2].y = brick.idx[1].y;
+                brick.idx[3].x = brick.idx[1].x + 1;
+                brick.idx[3].y = brick.idx[1].y + 1;
+                brick.shapeCheck = 0;
+            }
+        break;
+        case 4:
+            if(brick.shapeCheck == 0){
+                brick.idx[1].x = brick.idx[0].x;
+                brick.idx[1].y = brick.idx[0].y - 1;
+                brick.idx[2].x = brick.idx[0].x - 1;
+                brick.idx[2].y = brick.idx[0].y - 1;
+                brick.idx[3].x = brick.idx[0].x + 1;
+                brick.idx[3].y = brick.idx[0].y;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 1){
+                brick.idx[1].x = brick.idx[0].x;
+                brick.idx[1].y = brick.idx[0].y + 1;
+                brick.idx[2].x = brick.idx[0].x + 1;
+                brick.idx[2].y = brick.idx[0].y;
+                brick.idx[3].x = brick.idx[0].x + 1;
+                brick.idx[3].y = brick.idx[0].y - 1;
+                brick.shapeCheck = 0;
+            }
+        break;
+        case 5:
+            if(brick.shapeCheck == 0){
+                brick.idx[0].x = brick.idx[1].x;
+                brick.idx[0].y = brick.idx[1].y + 1;
+                brick.idx[2].x = brick.idx[1].x;
+                brick.idx[2].y = brick.idx[1].y - 1;
+                brick.idx[3].x = brick.idx[1].x + 1;
+                brick.idx[3].y = brick.idx[1].y - 1;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 1){
+                brick.idx[0].x = brick.idx[1].x - 1;
+                brick.idx[0].y = brick.idx[1].y;
+                brick.idx[2].x = brick.idx[1].x + 1;
+                brick.idx[2].y = brick.idx[1].y;
+                brick.idx[3].x = brick.idx[1].x - 1;
+                brick.idx[3].y = brick.idx[1].y - 1;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 2){
+                brick.idx[0].x = brick.idx[1].x;
+                brick.idx[0].y = brick.idx[1].y + 1;
+                brick.idx[2].x = brick.idx[1].x;
+                brick.idx[2].y = brick.idx[1].y - 1;
+                brick.idx[3].x = brick.idx[1].x - 1;
+                brick.idx[3].y = brick.idx[1].y + 1;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 3){
+                brick.idx[0].x = brick.idx[1].x - 1;
+                brick.idx[0].y = brick.idx[1].y;
+                brick.idx[2].x = brick.idx[1].x + 1;
+                brick.idx[2].y = brick.idx[1].y;
+                brick.idx[3].x = brick.idx[1].x + 1;
+                brick.idx[3].y = brick.idx[1].y + 1;
+                brick.shapeCheck = 0;
+            }
+        break;
+        case 6:
+            if(brick.shapeCheck == 0){
+                brick.idx[0].x = brick.idx[1].x;
+                brick.idx[0].y = brick.idx[1].y + 1;
+                brick.idx[2].x = brick.idx[1].x;
+                brick.idx[2].y = brick.idx[1].y - 1;
+                brick.idx[3].x = brick.idx[1].x - 1;
+                brick.idx[3].y = brick.idx[1].y - 1;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 1){
+                brick.idx[0].x = brick.idx[1].x - 1;
+                brick.idx[0].y = brick.idx[1].y;
+                brick.idx[2].x = brick.idx[1].x + 1;
+                brick.idx[2].y = brick.idx[1].y;
+                brick.idx[3].x = brick.idx[1].x - 1;
+                brick.idx[3].y = brick.idx[1].y + 1;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 2){
+                brick.idx[0].x = brick.idx[1].x;
+                brick.idx[0].y = brick.idx[1].y + 1;
+                brick.idx[2].x = brick.idx[1].x;
+                brick.idx[2].y = brick.idx[1].y - 1;
+                brick.idx[3].x = brick.idx[1].x + 1;
+                brick.idx[3].y = brick.idx[1].y + 1;
+                brick.shapeCheck++;
+            } else if(brick.shapeCheck == 3){
+                brick.idx[0].x = brick.idx[1].x - 1;
+                brick.idx[0].y = brick.idx[1].y;
+                brick.idx[2].x = brick.idx[1].x + 1;
+                brick.idx[2].y = brick.idx[1].y;
+                brick.idx[3].x = brick.idx[1].x + 1;
+                brick.idx[3].y = brick.idx[1].y - 1;
+                brick.shapeCheck = 0;
+            }
+        break;
+    }
 }
 int main(int argc, char* argv[]){
     SDL_Window* tetrisWindow = nullptr;
@@ -389,7 +571,7 @@ void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetri
                 VEL -= 900;
             break;
             case SDLK_w:
-
+                rotate(boardMatrix, brick);
             break;
         };
     } else if(e.type == SDL_KEYUP && e.key.repeat == 0){

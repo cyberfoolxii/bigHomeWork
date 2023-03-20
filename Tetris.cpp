@@ -214,168 +214,327 @@ void convertCoor(vector<vector<tetrisObject>> &boardMatrix, char shape[5][5], te
         }
     }
 }
+bool isRotateable(vector<vector<tetrisObject>> &boardMatrix, vector<SDL_Point> &temp){
+	bool check = true;
+		for(int k = 0; k < 4; k++){
+            if(temp[k].x >= 0 && temp[k].x <= BOARD_ROWS - 1 && temp[k].y >= 0 && temp[k].y <= BOARD_COLUMNS - 1){
+                if( (boardMatrix[ temp[k].x ][ temp[k].y ].occupied) ){
+                    check = false;
+                }
+            } else {
+                check = false;
+            }
+		}
+	return check;
+}
+
 void rotate(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
+    vector<SDL_Point> temp(4);
     switch(brick.randNum){
         case 0:
             if(brick.shapeCheck == 0){
-                brick.idx[0].x = brick.idx[1].x - 1;
-                brick.idx[0].y = brick.idx[1].y;
-                brick.idx[2].x = brick.idx[1].x + 1;
-                brick.idx[2].y = brick.idx[1].y;
-                brick.idx[3].x = brick.idx[1].x + 2;
-                brick.idx[3].y = brick.idx[1].y;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[1].x - 1;
+                temp[0].y = brick.idx[1].y;
+                temp[2].x = brick.idx[1].x + 1;
+                temp[2].y = brick.idx[1].y;
+                temp[3].x = brick.idx[1].x + 2;
+                temp[3].y = brick.idx[1].y;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+				if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 1){
-                brick.idx[0].x = brick.idx[1].x;
-                brick.idx[0].y = brick.idx[1].y - 1;
-                brick.idx[2].x = brick.idx[1].x;
-                brick.idx[2].y = brick.idx[1].y + 1;
-                brick.idx[3].x = brick.idx[1].x;
-                brick.idx[3].y = brick.idx[1].y + 2;
-                brick.shapeCheck = 0;
+                temp[0].x = brick.idx[1].x;
+                temp[0].y = brick.idx[1].y - 1;
+                temp[2].x = brick.idx[1].x;
+                temp[2].y = brick.idx[1].y + 1;
+                temp[3].x = brick.idx[1].x;
+                temp[3].y = brick.idx[1].y + 2;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+				if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck = 0;
+				}
             }
         break;
         case 2:
             if(brick.shapeCheck == 0){
-                brick.idx[0].x = brick.idx[2].x;
-                brick.idx[0].y = brick.idx[2].y + 1;
-                brick.idx[1].x = brick.idx[2].x - 1;
-                brick.idx[1].y = brick.idx[2].y;
-                brick.idx[3].x = brick.idx[2].x + 1;
-                brick.idx[3].y = brick.idx[2].y;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[2].x;
+                temp[0].y = brick.idx[2].y + 1;
+                temp[1].x = brick.idx[2].x - 1;
+                temp[1].y = brick.idx[2].y;
+                temp[3].x = brick.idx[2].x + 1;
+                temp[3].y = brick.idx[2].y;
+				temp[2].x = brick.idx[2].x;
+				temp[2].y = brick.idx[2].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 1){
-                brick.idx[0].x = brick.idx[2].x;
-                brick.idx[0].y = brick.idx[2].y - 1;
-                brick.idx[1].x = brick.idx[2].x;
-                brick.idx[1].y = brick.idx[2].y + 1;
-                brick.idx[3].x = brick.idx[2].x + 1;
-                brick.idx[3].y = brick.idx[2].y;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[2].x;
+                temp[0].y = brick.idx[2].y - 1;
+                temp[1].x = brick.idx[2].x;
+                temp[1].y = brick.idx[2].y + 1;
+                temp[3].x = brick.idx[2].x + 1;
+                temp[3].y = brick.idx[2].y;
+				temp[2].x = brick.idx[2].x;
+				temp[2].y = brick.idx[2].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 2){
-                brick.idx[0].x = brick.idx[2].x;
-                brick.idx[0].y = brick.idx[2].y - 1;
-                brick.idx[1].x = brick.idx[2].x - 1;
-                brick.idx[1].y = brick.idx[2].y;
-                brick.idx[3].x = brick.idx[2].x + 1;
-                brick.idx[3].y = brick.idx[2].y;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[2].x;
+                temp[0].y = brick.idx[2].y - 1;
+                temp[1].x = brick.idx[2].x - 1;
+                temp[1].y = brick.idx[2].y;
+                temp[3].x = brick.idx[2].x + 1;
+                temp[3].y = brick.idx[2].y;
+				temp[2].x = brick.idx[2].x;
+				temp[2].y = brick.idx[2].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 3){
-                brick.idx[0].x = brick.idx[2].x - 1;
-                brick.idx[0].y = brick.idx[2].y;
-                brick.idx[1].x = brick.idx[2].x;
-                brick.idx[1].y = brick.idx[2].y + 1;
-                brick.idx[3].x = brick.idx[2].x;
-                brick.idx[3].y = brick.idx[2].y - 1;
-                brick.shapeCheck = 0;
+                temp[0].x = brick.idx[2].x - 1;
+                temp[0].y = brick.idx[2].y;
+                temp[1].x = brick.idx[2].x;
+                temp[1].y = brick.idx[2].y + 1;
+                temp[3].x = brick.idx[2].x;
+                temp[3].y = brick.idx[2].y - 1;
+				temp[2].x = brick.idx[2].x;
+				temp[2].y = brick.idx[2].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck = 0;
+				}
             }
         break;
         case 3:
             if(brick.shapeCheck == 0){
-                brick.idx[0].x = brick.idx[1].x;
-                brick.idx[0].y = brick.idx[1].y - 1;
-                brick.idx[2].x = brick.idx[1].x - 1;
-                brick.idx[2].y = brick.idx[1].y;
-                brick.idx[3].x = brick.idx[1].x + 1;
-                brick.idx[3].y = brick.idx[1].y - 1;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[1].x;
+                temp[0].y = brick.idx[1].y - 1;
+                temp[2].x = brick.idx[1].x - 1;
+                temp[2].y = brick.idx[1].y;
+                temp[3].x = brick.idx[1].x + 1;
+                temp[3].y = brick.idx[1].y - 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+               	if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 1){
-                brick.idx[0].x = brick.idx[1].x;
-                brick.idx[0].y = brick.idx[1].y - 1;
-                brick.idx[2].x = brick.idx[1].x + 1;
-                brick.idx[2].y = brick.idx[1].y;
-                brick.idx[3].x = brick.idx[1].x + 1;
-                brick.idx[3].y = brick.idx[1].y + 1;
-                brick.shapeCheck = 0;
+                temp[0].x = brick.idx[1].x;
+                temp[0].y = brick.idx[1].y - 1;
+                temp[2].x = brick.idx[1].x + 1;
+                temp[2].y = brick.idx[1].y;
+                temp[3].x = brick.idx[1].x + 1;
+                temp[3].y = brick.idx[1].y + 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck = 0;
+				}
             }
         break;
         case 4:
             if(brick.shapeCheck == 0){
-                brick.idx[1].x = brick.idx[0].x;
-                brick.idx[1].y = brick.idx[0].y - 1;
-                brick.idx[2].x = brick.idx[0].x - 1;
-                brick.idx[2].y = brick.idx[0].y - 1;
-                brick.idx[3].x = brick.idx[0].x + 1;
-                brick.idx[3].y = brick.idx[0].y;
-                brick.shapeCheck++;
+                temp[1].x = brick.idx[0].x;
+                temp[1].y = brick.idx[0].y - 1;
+                temp[2].x = brick.idx[0].x - 1;
+                temp[2].y = brick.idx[0].y - 1;
+                temp[3].x = brick.idx[0].x + 1;
+                temp[3].y = brick.idx[0].y;
+				temp[0].x = brick.idx[0].x;
+				temp[0].y = brick.idx[0].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 1){
-                brick.idx[1].x = brick.idx[0].x;
-                brick.idx[1].y = brick.idx[0].y + 1;
-                brick.idx[2].x = brick.idx[0].x + 1;
-                brick.idx[2].y = brick.idx[0].y;
-                brick.idx[3].x = brick.idx[0].x + 1;
-                brick.idx[3].y = brick.idx[0].y - 1;
-                brick.shapeCheck = 0;
+                temp[1].x = brick.idx[0].x;
+                temp[1].y = brick.idx[0].y + 1;
+                temp[2].x = brick.idx[0].x + 1;
+                temp[2].y = brick.idx[0].y;
+                temp[3].x = brick.idx[0].x + 1;
+                temp[3].y = brick.idx[0].y - 1;
+				temp[0].x = brick.idx[0].x;
+				temp[0].y = brick.idx[0].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck = 0;
+				}
             }
         break;
         case 5:
             if(brick.shapeCheck == 0){
-                brick.idx[0].x = brick.idx[1].x;
-                brick.idx[0].y = brick.idx[1].y + 1;
-                brick.idx[2].x = brick.idx[1].x;
-                brick.idx[2].y = brick.idx[1].y - 1;
-                brick.idx[3].x = brick.idx[1].x + 1;
-                brick.idx[3].y = brick.idx[1].y - 1;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[1].x;
+                temp[0].y = brick.idx[1].y + 1;
+                temp[2].x = brick.idx[1].x;
+                temp[2].y = brick.idx[1].y - 1;
+                temp[3].x = brick.idx[1].x + 1;
+                temp[3].y = brick.idx[1].y - 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 1){
-                brick.idx[0].x = brick.idx[1].x - 1;
-                brick.idx[0].y = brick.idx[1].y;
-                brick.idx[2].x = brick.idx[1].x + 1;
-                brick.idx[2].y = brick.idx[1].y;
-                brick.idx[3].x = brick.idx[1].x - 1;
-                brick.idx[3].y = brick.idx[1].y - 1;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[1].x - 1;
+                temp[0].y = brick.idx[1].y;
+                temp[2].x = brick.idx[1].x + 1;
+                temp[2].y = brick.idx[1].y;
+                temp[3].x = brick.idx[1].x - 1;
+                temp[3].y = brick.idx[1].y - 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 2){
-                brick.idx[0].x = brick.idx[1].x;
-                brick.idx[0].y = brick.idx[1].y + 1;
-                brick.idx[2].x = brick.idx[1].x;
-                brick.idx[2].y = brick.idx[1].y - 1;
-                brick.idx[3].x = brick.idx[1].x - 1;
-                brick.idx[3].y = brick.idx[1].y + 1;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[1].x;
+                temp[0].y = brick.idx[1].y + 1;
+                temp[2].x = brick.idx[1].x;
+                temp[2].y = brick.idx[1].y - 1;
+                temp[3].x = brick.idx[1].x - 1;
+                temp[3].y = brick.idx[1].y + 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 3){
-                brick.idx[0].x = brick.idx[1].x - 1;
-                brick.idx[0].y = brick.idx[1].y;
-                brick.idx[2].x = brick.idx[1].x + 1;
-                brick.idx[2].y = brick.idx[1].y;
-                brick.idx[3].x = brick.idx[1].x + 1;
-                brick.idx[3].y = brick.idx[1].y + 1;
-                brick.shapeCheck = 0;
+                temp[0].x = brick.idx[1].x - 1;
+                temp[0].y = brick.idx[1].y;
+                temp[2].x = brick.idx[1].x + 1;
+                temp[2].y = brick.idx[1].y;
+                temp[3].x = brick.idx[1].x + 1;
+                temp[3].y = brick.idx[1].y + 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck = 0;
+				}
             }
         break;
         case 6:
             if(brick.shapeCheck == 0){
-                brick.idx[0].x = brick.idx[1].x;
-                brick.idx[0].y = brick.idx[1].y + 1;
-                brick.idx[2].x = brick.idx[1].x;
-                brick.idx[2].y = brick.idx[1].y - 1;
-                brick.idx[3].x = brick.idx[1].x - 1;
-                brick.idx[3].y = brick.idx[1].y - 1;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[1].x;
+                temp[0].y = brick.idx[1].y + 1;
+                temp[2].x = brick.idx[1].x;
+                temp[2].y = brick.idx[1].y - 1;
+                temp[3].x = brick.idx[1].x - 1;
+                temp[3].y = brick.idx[1].y - 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+				if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 1){
-                brick.idx[0].x = brick.idx[1].x - 1;
-                brick.idx[0].y = brick.idx[1].y;
-                brick.idx[2].x = brick.idx[1].x + 1;
-                brick.idx[2].y = brick.idx[1].y;
-                brick.idx[3].x = brick.idx[1].x - 1;
-                brick.idx[3].y = brick.idx[1].y + 1;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[1].x - 1;
+                temp[0].y = brick.idx[1].y;
+                temp[2].x = brick.idx[1].x + 1;
+                temp[2].y = brick.idx[1].y;
+                temp[3].x = brick.idx[1].x - 1;
+                temp[3].y = brick.idx[1].y + 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 2){
-                brick.idx[0].x = brick.idx[1].x;
-                brick.idx[0].y = brick.idx[1].y + 1;
-                brick.idx[2].x = brick.idx[1].x;
-                brick.idx[2].y = brick.idx[1].y - 1;
-                brick.idx[3].x = brick.idx[1].x + 1;
-                brick.idx[3].y = brick.idx[1].y + 1;
-                brick.shapeCheck++;
+                temp[0].x = brick.idx[1].x;
+                temp[0].y = brick.idx[1].y + 1;
+                temp[2].x = brick.idx[1].x;
+                temp[2].y = brick.idx[1].y - 1;
+                temp[3].x = brick.idx[1].x + 1;
+                temp[3].y = brick.idx[1].y + 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck++;
+				}
             } else if(brick.shapeCheck == 3){
-                brick.idx[0].x = brick.idx[1].x - 1;
-                brick.idx[0].y = brick.idx[1].y;
-                brick.idx[2].x = brick.idx[1].x + 1;
-                brick.idx[2].y = brick.idx[1].y;
-                brick.idx[3].x = brick.idx[1].x + 1;
-                brick.idx[3].y = brick.idx[1].y - 1;
-                brick.shapeCheck = 0;
+                temp[0].x = brick.idx[1].x - 1;
+                temp[0].y = brick.idx[1].y;
+                temp[2].x = brick.idx[1].x + 1;
+                temp[2].y = brick.idx[1].y;
+                temp[3].x = brick.idx[1].x + 1;
+                temp[3].y = brick.idx[1].y - 1;
+				temp[1].x = brick.idx[1].x;
+				temp[1].y = brick.idx[1].y;
+                if(isRotateable(boardMatrix, temp)){
+					for(int i = 0; i < 4; i++){
+						brick.idx[i].x = temp[i].x;
+						brick.idx[i].y = temp[i].y;
+					}
+					brick.shapeCheck = 0;
+				}
             }
         break;
     }

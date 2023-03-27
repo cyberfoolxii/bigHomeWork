@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1679330256 source:e:\projekts\bighomework_tetris\tetris.cpp
+1679901665 source:e:\projekts\bighomework_tetris\tetris.cpp
 	"TETRIS_Utils.h"
 
-1678446823 e:\projekts\bighomework_tetris\tetris_utils.h
+1679901687 e:\projekts\bighomework_tetris\tetris_utils.h
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
@@ -13,6 +13,23 @@
 	<ctime>
 	<sstream>
 
-1678447021 source:e:\projekts\bighomework_tetris\tetris_def.cpp
+1679901665 source:e:\projekts\bighomework_tetris\tetris_def.cpp
+	"TETRIS_Utils.h"
+
+1679901665 source:c:\bighomework_tetris\tetris.cpp
+	"TETRIS_Utils.h"
+
+1679901687 c:\bighomework_tetris\tetris_utils.h
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_ttf.h>
+	<string>
+	<vector>
+	<cstdlib>
+	<ctime>
+	<sstream>
+
+1679901665 source:c:\bighomework_tetris\tetris_def.cpp
 	"TETRIS_Utils.h"
 

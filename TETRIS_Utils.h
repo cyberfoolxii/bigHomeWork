@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 #include <sstream>
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 720
@@ -16,6 +17,23 @@ const int BOARD_COLUMNS = 10;
 const int BLOCK_SIZE = 40;
 const int OBJECT_VEL = 1000;
 
+enum homeOptions{
+    PLAY_OPTION,
+    OPTIONS_OPTION,
+    TUTORIAL_OPTION,
+    TOTAL_OPTIONS
+};
+
+enum arrowCoor{
+    ARROW_X1 = 310,
+    ARROW_Y1 = 425,
+    ARROW_X2 = 280,
+    ARROW_Y2 = 470,
+    ARROW_X3 = 260,
+    ARROW_Y3 = 513,
+    ARROW_X4 = 312,
+    ARROW_Y4 = 555,
+};
 enum tetrisTextureFlags{
     TETRIS_BACKGROUND_TEXTURE,
     TETRIS_GAMEOVER_TEXTURE,
@@ -25,6 +43,10 @@ enum tetrisTextureFlags{
     TETRIS_LINES_COUNT,
     TETRIS_TIME_TEXT,
     TETRIS_TIME_COUNT,
+    TETRIS_LEVEL_BOX,
+    TETRIS_LEVEL_COUNT,
+    TETRIS_HOME_TEXTURE,
+    TETRIS_ARROW_TEXT,
     TETRIS_BLOCK_TEXTURE,
     TETRIS_BLOCK_TEXTURE_1,
     TETRIS_BLOCK_TEXTURE_2,
@@ -50,7 +72,6 @@ private:
     bool tetrisStarted;
     bool tetrisPaused;
 };
-
 class tetrisTexture{
 public:
     tetrisTexture();
@@ -59,7 +80,7 @@ public:
     int getHeight();
     void freeTexture();
     bool loadFromFile(const std::string &filePath, SDL_Renderer*& tetrisRenderer);
-    bool loadFromText(TTF_Font*& font, const std::string &text, SDL_Renderer*& tetrisRenderer);
+    bool loadFromText(TTF_Font*& font, const std::string &text, SDL_Renderer*& tetrisRenderer, const SDL_Color &textColor);
     void renderTexture(const int &x, const int &y, SDL_Renderer*& tetrisRenderer, SDL_Rect* clipRect);
 private:
     SDL_Texture* mTexture;
@@ -94,8 +115,8 @@ bool initSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer);
 void closeSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer, tetrisTexture* tetrisSpriteSheet, TTF_Font*& tetrisFont);
 bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, TTF_Font*& tetrisFont);
 std::vector<std::vector<tetrisObject>> generateMatrix();
-void renderBoard(const std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, const tetrisBrick &brick);
-void eventHandler(SDL_Event &e, std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, tetrisTimer &timer, int &VEL, bool &quit);
+void renderBoard(const std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, const tetrisBrick &brick, const bool* optionList, const int &arrow_X, const int &arrow_Y);
+void eventHandler(SDL_Event &e, std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, tetrisTimer &timer, int &VEL, bool &quit, bool* optionList, int &arrow_X, int &arrow_Y);
 bool canFall(std::vector<std::vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 bool canLeft(std::vector<std::vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 bool canRight(std::vector<std::vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
@@ -106,7 +127,7 @@ bool canBrickFall(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBri
 bool canBrickLeft(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 bool canBrickRight(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 void renderDataAndSetBrick(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, tetrisTexture* tetrisSpriteSheet,
-tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer);
+tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer, int &VEL);
 void rotate(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 bool isGameOver(std::vector<std::vector<tetrisObject>> &boardMatrix);
 bool isRotateable(std::vector<std::vector<tetrisObject>> &boardMatrix, std::vector<SDL_Point> &temp);

@@ -3,7 +3,7 @@ using namespace std;
 
 void tetrisBrick::pickShape(){
     shapeCheck = 0;
-    vel = OBJECT_VEL;
+    vel = defaultVel;
     srand(time(0));
     randNum = rand()%7;
     switch(randNum){
@@ -90,6 +90,7 @@ void tetrisBrick::pickColor(){
     }
 }
 tetrisBrick::tetrisBrick(){
+    defaultVel = 1000;
     pickColor();
     pickShape();
 }
@@ -470,8 +471,8 @@ tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer){
             brick.pickShape();
         }
         if(countedScore >= ((countedLevel + 1)*50) ){
-            if(brick.vel - 100 >= 1){
-                brick.vel -= 100;
+            if(brick.defaultVel - 100 >= 1){
+                brick.defaultVel -= 100;
             }
             countedLevel++;
         }
@@ -601,6 +602,8 @@ void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetri
                         break;
                         case ARROW_X3:
                             optionList[TUTORIAL_OPTION] = true;
+                            arrow_X = ARROW_X7;
+                            arrow_Y = ARROW_Y7;
                         break;
                         case ARROW_X4:
                             quit = true;
@@ -671,8 +674,6 @@ void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetri
                 }
             }
         } else if(optionList[TUTORIAL_OPTION]){
-            arrow_X = ARROW_X7;
-            arrow_Y = ARROW_Y7;
             if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
                 if(e.key.keysym.sym == SDLK_RETURN){
                     optionList[TUTORIAL_OPTION] = false;
@@ -686,6 +687,8 @@ void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetri
             if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
                 if(e.key.keysym.sym == SDLK_t){
                     boardMatrix = generateMatrix();
+                    brick.defaultVel = 1000;
+                    brick.vel = brick.defaultVel;
                     timer.tetrisTimerStart();
                 } else if(e.key.keysym.sym == SDLK_e){
                     optionList[PLAY_OPTION] = false;
@@ -709,7 +712,7 @@ void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetri
                 };
             } else if(e.type == SDL_KEYUP && e.key.repeat == 0){
                 if(e.key.keysym.sym == SDLK_s){
-                    brick.vel = OBJECT_VEL;
+                    brick.vel = brick.defaultVel;
                 }
             }
         }

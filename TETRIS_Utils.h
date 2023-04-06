@@ -16,7 +16,6 @@ const std::string WINDOW_TITLE = "Tetris Game - Cuong Nguyen";
 const int BOARD_ROWS = 18;
 const int BOARD_COLUMNS = 10;
 const int BLOCK_SIZE = 40;
-const int OBJECT_VEL = 1000;
 
 enum homeOptions{
     PLAY_OPTION,
@@ -118,6 +117,7 @@ class tetrisBrick{
     tetrisTextureFlags color = TETRIS_BLOCK_TEXTURE;
     std::vector<SDL_Point> idx;
     int randNum;
+    int defaultVel;
     int vel;
     void pickShape();
     void pickColor();

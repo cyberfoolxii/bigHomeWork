@@ -22,11 +22,12 @@ enum homeOptions{
     OPTIONS_OPTION,
     TUTORIAL_OPTION,
     MUSIC_OPTION,
+    ESCAPE_OPTION,
     TOTAL_OPTIONS
 };
 
 enum arrowCoor{
-    ARROW_X1 = 310,
+    ARROW_X1 = 310, // play
     ARROW_Y1 = 425,
     ARROW_X2 = 280,
     ARROW_Y2 = 470,
@@ -39,7 +40,13 @@ enum arrowCoor{
     ARROW_X6 = 235,
     ARROW_Y6 = 462,
     ARROW_X7 = 70,
-    ARROW_Y7 = 602
+    ARROW_Y7 = 602,
+    ARROW_X8 = 158, //resume
+    ARROW_Y8 = 442,
+    ARROW_X9 = 157,
+    ARROW_Y9 = 510,
+    ARROW_X10 = 123, // main menu
+    ARROW_Y10 = 575
 };
 enum tetrisTextureFlags{
     TETRIS_BACKGROUND_TEXTURE,
@@ -58,6 +65,7 @@ enum tetrisTextureFlags{
     TETRIS_ARROW_TEXT,
     TETRIS_ON_TEXT,
     TETRIS_OFF_TEXT,
+    TETRIS_ESCAPE_TEXTURE,
     TETRIS_BLOCK_TEXTURE,
     TETRIS_BLOCK_TEXTURE_1,
     TETRIS_BLOCK_TEXTURE_2,
@@ -128,19 +136,20 @@ bool initSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer);
 void closeSDL(SDL_Window*& tetrisWindow, SDL_Renderer*& tetrisRenderer, tetrisTexture* tetrisSpriteSheet, TTF_Font*& tetrisFont, Mix_Music*& music);
 bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, TTF_Font*& tetrisFont, Mix_Music*& music);
 std::vector<std::vector<tetrisObject>> generateMatrix();
-void renderBoard(const std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, const tetrisBrick &brick, const bool* optionList, const int &arrow_X, const int &arrow_Y);
+void renderBoard(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, const tetrisBrick &brick, const bool* optionList, const int &arrow_X, const int &arrow_Y);
 void eventHandler(SDL_Event &e, std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, tetrisTimer &timer, bool &quit, bool* optionList, int &arrow_X, int &arrow_Y);
 bool canFall(std::vector<std::vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 bool canLeft(std::vector<std::vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 bool canRight(std::vector<std::vector<tetrisObject>> &boardMatrix, const int &i, const int &j);
 void brickMoveLeft(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 void brickMoveRight(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
-void brickFallDown(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick);
+void brickFallDown(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const bool optionList[]);
 bool canBrickFall(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 bool canBrickLeft(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 bool canBrickRight(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
 void renderDataAndSetBrick(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, tetrisTexture* tetrisSpriteSheet,
 tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer);
 void rotate(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisBrick &brick);
+void replay(std::vector<std::vector<tetrisObject>> &boardMatrix, tetrisTimer& timer, tetrisBrick& brick);
 bool isGameOver(std::vector<std::vector<tetrisObject>> &boardMatrix);
 bool isRotateable(std::vector<std::vector<tetrisObject>> &boardMatrix, std::vector<SDL_Point> &temp);

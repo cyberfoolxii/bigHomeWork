@@ -4,8 +4,8 @@ using namespace std;
 void tetrisBrick::pickShape(){
     shapeCheck = 0;
     vel = defaultVel;
-    srand(time(0));
-    randNum = rand()%7;
+    //srand(time(0));
+    randNum = rand()%6;
     switch(randNum){
         case 0: // _
             idx = {
@@ -431,6 +431,14 @@ void rotate(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick){
     }
 }
 
+void replay(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer& timer, tetrisBrick& brick){
+    boardMatrix = generateMatrix();
+    timer.tetrisTimerStart();
+    brick.pickColor();
+    brick.pickShape();
+    brick.defaultVel = 1000;
+    brick.vel = brick.defaultVel;
+}
 void renderDataAndSetBrick(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &brick, tetrisTexture* tetrisSpriteSheet,
 tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer){
     static int countedScore = 0;
@@ -442,7 +450,10 @@ tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer){
         countedLines = 0;
         countedLevel = 0;
         timer.tetrisTimerPause();
-        tetrisSpriteSheet[TETRIS_GAMEOVER_TEXTURE].renderTexture(80, 0, tetrisRenderer, nullptr);
+    } else if(timer.tetrisTimerGetTicks() == 0){
+        countedScore = 0;
+        countedLines = 0;
+        countedLevel = 0;
     } else {
         int currentLines = 0;
         if(!canBrickFall(boardMatrix, brick)){
@@ -567,9 +578,9 @@ void brickMoveRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &bric
         }
     }
 }
-void brickFallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick){
+void brickFallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const bool optionList[]){
     static int timeCheck = timer.tetrisTimerGetTicks();
-    if(isGameOver(boardMatrix)){
+    if(timer.tetrisTimerGetTicks() == 0){
         timeCheck = 0;
     } else {
         if(timer.tetrisTimerGetTicks() - timeCheck >= brick.vel)
@@ -592,8 +603,7 @@ void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetri
                     switch(arrow_X){
                         case ARROW_X1:
                             optionList[PLAY_OPTION] = true;
-                            boardMatrix = generateMatrix();
-                            timer.tetrisTimerStart();
+                            replay(boardMatrix, timer, brick);
                         break;
                         case ARROW_X2:
                             optionList[OPTIONS_OPTION] = true;
@@ -686,33 +696,82 @@ void eventHandler(SDL_Event &e, vector<vector<tetrisObject>> &boardMatrix, tetri
         if(isGameOver(boardMatrix)){
             if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
                 if(e.key.keysym.sym == SDLK_t){
-                    boardMatrix = generateMatrix();
-                    brick.defaultVel = 1000;
-                    brick.vel = brick.defaultVel;
-                    timer.tetrisTimerStart();
+                    replay(boardMatrix, timer, brick);
                 } else if(e.key.keysym.sym == SDLK_e){
                     optionList[PLAY_OPTION] = false;
                 }
             }
         } else {
-            if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
-                switch(e.key.keysym.sym){
-                    case SDLK_a:
-                        brickMoveLeft(boardMatrix, brick);
-                    break;
-                    case SDLK_d:
-                        brickMoveRight(boardMatrix, brick);
-                    break;
-                    case SDLK_s:
-                        brick.vel = 1;
-                    break;
-                    case SDLK_w:
-                        rotate(boardMatrix, brick);
-                    break;
-                };
-            } else if(e.type == SDL_KEYUP && e.key.repeat == 0){
-                if(e.key.keysym.sym == SDLK_s){
+            if(!optionList[ESCAPE_OPTION]){
+                if(e.type == SDL_KEYDOWN && e.key.repeat == 0 ){
+                    switch(e.key.keysym.sym){
+                        case SDLK_a:
+                            brickMoveLeft(boardMatrix, brick);
+                        break;
+                        case SDLK_d:
+                            brickMoveRight(boardMatrix, brick);
+                        break;
+                        case SDLK_s:
+                            brick.vel = 1;
+                        break;
+                        case SDLK_w:
+                            rotate(boardMatrix, brick);
+                        break;
+                        case SDLK_ESCAPE:
+                            optionList[ESCAPE_OPTION] = true;
+                            timer.tetrisTimerPause();
+                            arrow_X = ARROW_X8;
+                            arrow_Y = ARROW_Y8;
+                        break;
+                    };
+                } else if(e.type == SDL_KEYUP && e.key.repeat == 0 && e.key.keysym.sym == SDLK_s){
                     brick.vel = brick.defaultVel;
+                }
+            } else {
+                if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
+                    switch(e.key.keysym.sym){
+                        case SDLK_RETURN:
+                            optionList[ESCAPE_OPTION] = false;
+                            switch(arrow_X){
+                                case ARROW_X8:
+                                    timer.tetrisTimerUnpause();
+                                break;
+                                case ARROW_X9:
+                                    optionList[ESCAPE_OPTION] = false;
+                                    replay(boardMatrix, timer, brick);
+                                break;
+                                case ARROW_X10:
+                                    optionList[PLAY_OPTION] = false;
+                                    arrow_X = ARROW_X1;
+                                    arrow_Y = ARROW_Y1;
+                                break;
+                            }
+                        break;
+                        case SDLK_s:
+                            switch(arrow_X){
+                                case ARROW_X8:
+                                    arrow_X = ARROW_X9;
+                                    arrow_Y = ARROW_Y9;
+                                break;
+                                case ARROW_X9:
+                                    arrow_X = ARROW_X10;
+                                    arrow_Y = ARROW_Y10;
+                                break;
+                            }
+                        break;
+                        case SDLK_w:
+                            switch(arrow_X){
+                                case ARROW_X10:
+                                    arrow_X = ARROW_X9;
+                                    arrow_Y = ARROW_Y9;
+                                break;
+                                case ARROW_X9:
+                                    arrow_X = ARROW_X8;
+                                    arrow_Y = ARROW_Y8;
+                                break;
+                            }
+                        break;
+                    }
                 }
             }
         }
@@ -730,7 +789,7 @@ vector<vector<tetrisObject>> generateMatrix(){
     return boardMatrix;
 }
 
-void renderBoard(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, const tetrisBrick &brick, const bool* optionList, const int &arrow_X, const int &arrow_Y){
+void renderBoard(vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, const tetrisBrick &brick, const bool* optionList, const int &arrow_X, const int &arrow_Y){
     if(!optionList[PLAY_OPTION]){
         if(optionList[OPTIONS_OPTION]){
             tetrisSpriteSheet[TETRIS_OPTIONS_TEXTURE].renderTexture(0, 0, tetrisRenderer, nullptr);
@@ -765,6 +824,19 @@ void renderBoard(const vector<vector<tetrisObject>> &boardMatrix, tetrisTexture*
         for(int i = 0; i < brick.idx.size(); i++){
             tetrisSpriteSheet[brick.color].renderTexture(boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].coordinate.x, boardMatrix[ brick.idx[i].x ][ brick.idx[i].y ].coordinate.y, tetrisRenderer, nullptr);
         }
+        if(optionList[ESCAPE_OPTION] == true){
+            tetrisSpriteSheet[TETRIS_ESCAPE_TEXTURE].renderTexture(80, 0, tetrisRenderer, nullptr);
+            tetrisSpriteSheet[TETRIS_ARROW_TEXT].renderTexture(arrow_X, arrow_Y, tetrisRenderer, nullptr);
+        }
+        if(isGameOver(boardMatrix)){
+            tetrisSpriteSheet[TETRIS_GAMEOVER_TEXTURE].renderTexture(80, 0, tetrisRenderer, nullptr);
+        }
+//        for(int i = 0; i < miniMatrix.size(); i++){
+//            for(int j = 0; j < miniMatrix[i].size(); j++){
+//                if(miniMatrix[i][j].occupied)
+//                tetrisSpriteSheet[miniMatrix[i][j].color].renderTexture(miniMatrix[i][j].coordinate.x, miniMatrix[i][j].coordinate.y, tetrisRenderer, nullptr);
+//            }
+//        }
     }
 }
 
@@ -854,6 +926,10 @@ bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, 
     }
     if(!tetrisSpriteSheet[TETRIS_OFF_TEXT].loadFromText(tetrisFont, "Off", tetrisRenderer, textColor)){
         cout << "Load Tetris Off Text Failed" << endl;
+        success = false;
+    }
+    if(!tetrisSpriteSheet[TETRIS_ESCAPE_TEXTURE].loadFromFile("textures/escapeoption.png", tetrisRenderer)){
+        cout << "Load Tetris Escape Texture Failed" << endl;
         success = false;
     }
     return success;

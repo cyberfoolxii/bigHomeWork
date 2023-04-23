@@ -4,8 +4,7 @@ using namespace std;
 void tetrisBrick::pickShape(){
     shapeCheck = 0;
     vel = defaultVel;
-    //srand(time(0));
-    randNum = rand()%6;
+    randNum = rand()%7;
     switch(randNum){
         case 0: // _
             idx = {
@@ -445,6 +444,10 @@ tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer){
     static int countedLines = 0;
     static int countedLevel = 0;
     stringstream sstream;
+    ifstream in("best_score.txt", ios::app);
+    int best_score;
+    in >> best_score;
+    in.close();
     if(isGameOver(boardMatrix)){
         countedScore = 0;
         countedLines = 0;
@@ -488,6 +491,18 @@ tetrisTimer &timer, TTF_Font*& font, SDL_Renderer*& tetrisRenderer){
             countedLevel++;
         }
         SDL_Color textColor = {0, 0, 0, 255};
+
+
+        sstream.str("");
+        if(best_score < countedScore){
+            best_score = countedScore;
+            ofstream out("best_score.txt");
+            out << best_score;
+            out.close();
+        }
+        sstream << best_score;
+        tetrisSpriteSheet[TETRIS_BEST_TEXT].loadFromText(font, sstream.str().c_str(), tetrisRenderer, textColor);
+
         sstream.str("");
         sstream << countedLevel;
         tetrisSpriteSheet[TETRIS_LEVEL_COUNT].loadFromText(font, sstream.str().c_str(), tetrisRenderer, textColor);
@@ -806,14 +821,16 @@ void renderBoard(vector<vector<tetrisObject>> &boardMatrix, tetrisTexture* tetri
         tetrisSpriteSheet[TETRIS_ARROW_TEXT].renderTexture(arrow_X, arrow_Y, tetrisRenderer, nullptr);
     } else {
         tetrisSpriteSheet[TETRIS_BACKGROUND_TEXTURE].renderTexture(0, 0, tetrisRenderer, nullptr);
-        tetrisSpriteSheet[TETRIS_SCORE_BOX].renderTexture(520, 360, tetrisRenderer, nullptr);
-        tetrisSpriteSheet[TETRIS_LINES_BOX].renderTexture(520, 600, tetrisRenderer, nullptr);
-        tetrisSpriteSheet[TETRIS_TIME_BOX].renderTexture(520, 480, tetrisRenderer, nullptr);
-        tetrisSpriteSheet[TETRIS_SCORE_COUNT].renderTexture(570, 400, tetrisRenderer, nullptr);
-        tetrisSpriteSheet[TETRIS_LINES_COUNT].renderTexture(570, 640, tetrisRenderer, nullptr);
-        tetrisSpriteSheet[TETRIS_TIME_COUNT].renderTexture(570, 520, tetrisRenderer, nullptr);
-        tetrisSpriteSheet[TETRIS_LEVEL_BOX].renderTexture(520, 0, tetrisRenderer, nullptr);
-        tetrisSpriteSheet[TETRIS_LEVEL_COUNT].renderTexture(570, 40, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_SCORE_BOX].renderTexture(520, 320, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_LINES_BOX].renderTexture(520, 560, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_TIME_BOX].renderTexture(520, 440, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_BEST_BOX].renderTexture(520, 80, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_BEST_TEXT].renderTexture(570, 120, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_SCORE_COUNT].renderTexture(570, 360, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_LINES_COUNT].renderTexture(570, 600, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_TIME_COUNT].renderTexture(570, 480, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_LEVEL_BOX].renderTexture(520, 200, tetrisRenderer, nullptr);
+        tetrisSpriteSheet[TETRIS_LEVEL_COUNT].renderTexture(570, 240, tetrisRenderer, nullptr);
         for(int i = 0; i < BOARD_ROWS; i++){
             for(int j = 0; j < BOARD_COLUMNS; j++){
                 if(boardMatrix[i][j].occupied){
@@ -930,6 +947,10 @@ bool loadMedia(tetrisTexture* tetrisSpriteSheet, SDL_Renderer*& tetrisRenderer, 
     }
     if(!tetrisSpriteSheet[TETRIS_ESCAPE_TEXTURE].loadFromFile("textures/escapeoption.png", tetrisRenderer)){
         cout << "Load Tetris Escape Texture Failed" << endl;
+        success = false;
+    }
+    if(!tetrisSpriteSheet[TETRIS_BEST_BOX].loadFromFile("textures/bestbox.png", tetrisRenderer)){
+        cout << "Load Tetris Best Score Box Failed" << endl;
         success = false;
     }
     return success;

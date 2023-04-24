@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1681824383 source:e:\projekts\bighomework_tetris\tetris.cpp
+1682326033 source:e:\projekts\bighomework_tetris\tetris.cpp
 	"TETRIS_Utils.h"
 
 1682273203 e:\projekts\bighomework_tetris\tetris_utils.h
@@ -15,6 +15,6 @@
 	<fstream>
 	<sstream>
 
-1682276439 source:e:\projekts\bighomework_tetris\tetris_def.cpp
+1682304733 source:e:\projekts\bighomework_tetris\tetris_def.cpp
 	"TETRIS_Utils.h"
 

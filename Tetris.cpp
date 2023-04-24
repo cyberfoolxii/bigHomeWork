@@ -1,51 +1,6 @@
 #include "TETRIS_Utils.h"
 using namespace std;
 
-//    vector<vector<tetrisObject>> miniMatrix(5);
-//    for(int i = 0; i < miniMatrix.size(); i++){
-//        miniMatrix[i] = vector<tetrisObject>(5);
-//        for(int j = 0; j < miniMatrix[i].size(); j++){
-//            if(i == 0 && j == 0){
-//                miniMatrix[i][j].coordinate = {BLOCK_SIZE*(j+15), BLOCK_SIZE*(i+3)};
-//            } else if(i == 0 && j > 0){
-//                miniMatrix[i][j].coordinate = {miniMatrix[i][j - 1].coordinate.x + 32, BLOCK_SIZE*(i+3)};
-//            } else if(i > 0 && j == 0){
-//                miniMatrix[i][j].coordinate = {BLOCK_SIZE*(j+15), miniMatrix[i-1][j].coordinate.y + 32};
-//            } else {
-//                miniMatrix[i][j].coordinate = {miniMatrix[i-1][j-1].coordinate.x + 32, miniMatrix[i-1][j-1].coordinate.y + 32};
-//            }
-//        }
-//    }
-
-//    for(int i = 0; i < 4; i++){
-//        int temp = brick.idx[i].y;
-//        bool check = true;
-//        for(int i = 0; i < 4; i++){
-//            if(!canLeft(gameBoard, brick.idx[i].x, temp)){
-//                check = false;
-//            }
-//        }
-//        while(check){
-//            temp--;
-//        }
-//        miniMatrix[brick.idx[i].x][temp].occupied = true;
-//    }
-
-//    vector<vector<tetrisObject>> miniMatrix(5);
-//    for(int i = 0; i < miniMatrix.size(); i++){
-//        miniMatrix[i] = vector<tetrisObject>(5);
-//        for(int j = 0; j < miniMatrix[i].size(); j++){
-//            if(i == 0 && j == 0){
-//                miniMatrix[i][j].coordinate = {BLOCK_SIZE*(j+15), BLOCK_SIZE*(i+3)};
-//            } else if(i == 0 && j > 0){
-//                miniMatrix[i][j].coordinate = {miniMatrix[i][j - 1].coordinate.x + 32, BLOCK_SIZE*(i+3)};
-//            } else if(i > 0 && j == 0){
-//                miniMatrix[i][j].coordinate = {BLOCK_SIZE*(j+15), miniMatrix[i-1][j].coordinate.y + 32};
-//            } else {
-//                miniMatrix[i][j].coordinate = {miniMatrix[i-1][j-1].coordinate.x + 32, miniMatrix[i-1][j-1].coordinate.y + 32};
-//            }
-//        }
-//    }
 int main(int argc, char* argv[]){
     SDL_Window* tetrisWindow = nullptr;
     SDL_Renderer* tetrisRenderer = nullptr;

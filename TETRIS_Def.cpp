@@ -595,7 +595,7 @@ void brickMoveRight(vector<vector<tetrisObject>> &boardMatrix, tetrisBrick &bric
 }
 void brickFallDown(vector<vector<tetrisObject>> &boardMatrix, tetrisTimer timer, tetrisBrick &brick, const bool optionList[]){
     static int timeCheck = timer.tetrisTimerGetTicks();
-    if(timer.tetrisTimerGetTicks() == 0){
+    if(timer.tetrisTimerGetTicks() <= 10){
         timeCheck = 0;
     } else {
         if(timer.tetrisTimerGetTicks() - timeCheck >= brick.vel)
